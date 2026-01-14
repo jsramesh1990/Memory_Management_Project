@@ -11,6 +11,18 @@ https://img.shields.io/badge/License-MIT-brightgreen.svg
 https://img.shields.io/badge/Platform-Linux%2520%257C%2520macOS%2520%257C%2520WSL-lightgrey.svg
 https://img.shields.io/badge/Compiler-GCC%25209+-blueviolet.svg
 https://img.shields.io/badge/Beginner-Friendly-success.svg
+Here are the badges for your Memory Management in C project:
+
+[![C Language](https://img.shields.io/badge/C-Programming-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
+[![Memory Management](https://img.shields.io/badge/Memory-Management-orange.svg)](https://en.wikipedia.org/wiki/Memory_management)
+[![Static Memory](https://img.shields.io/badge/Static-Memory-yellow.svg)](https://en.wikipedia.org/wiki/Static_memory_allocation)
+[![Stack Memory](https://img.shields.io/badge/Stack-Memory-green.svg)](https://en.wikipedia.org/wiki/Stack-based_memory_allocation)
+[![Heap Memory](https://img.shields.io/badge/Heap-Dynamic-red.svg)](https://en.wikipedia.org/wiki/Heap_(programming))
+[![Educational](https://img.shields.io/badge/Educational-Project-purple.svg)](https://en.wikipedia.org/wiki/Educational_software)
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20WSL-lightgrey.svg)](https://en.wikipedia.org/wiki/Cross-platform)
+[![GCC Compiler](https://img.shields.io/badge/Compiler-GCC%209+-blueviolet.svg)](https://gcc.gnu.org/)
+[![Beginner Friendly](https://img.shields.io/badge/Beginner-Friendly-success.svg)](https://en.wikipedia.org/wiki/Learning_curve)
 
 This project demonstrates how memory works in real C applications by showcasing static memory, stack memory, and dynamic (heap) memory.
 It includes example programs, documentation, and test scripts to help beginners understand how memory allocation works at the system level.
