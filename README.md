@@ -1,18 +1,6 @@
 ##    Memory Management in C
 – Static, Stack & Dynamic (Heap) Memory
 
-https://img.shields.io/badge/C-Programming-blue.svg
-https://img.shields.io/badge/Memory-Management-orange.svg
-https://img.shields.io/badge/Static-Memory-yellow.svg
-https://img.shields.io/badge/Stack-Memory-green.svg
-https://img.shields.io/badge/Heap-Dynamic-red.svg
-https://img.shields.io/badge/Educational-Project-purple.svg
-https://img.shields.io/badge/License-MIT-brightgreen.svg
-https://img.shields.io/badge/Platform-Linux%2520%257C%2520macOS%2520%257C%2520WSL-lightgrey.svg
-https://img.shields.io/badge/Compiler-GCC%25209+-blueviolet.svg
-https://img.shields.io/badge/Beginner-Friendly-success.svg
-Here are the badges for your Memory Management in C project:
-
 [![C Language](https://img.shields.io/badge/C-Programming-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
 [![Memory Management](https://img.shields.io/badge/Memory-Management-orange.svg)](https://en.wikipedia.org/wiki/Memory_management)
 [![Static Memory](https://img.shields.io/badge/Static-Memory-yellow.svg)](https://en.wikipedia.org/wiki/Static_memory_allocation)
