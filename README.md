@@ -1,6 +1,17 @@
 ##    Memory Management in C
 – Static, Stack & Dynamic (Heap) Memory
 
+https://img.shields.io/badge/C-Programming-blue.svg
+https://img.shields.io/badge/Memory-Management-orange.svg
+https://img.shields.io/badge/Static-Memory-yellow.svg
+https://img.shields.io/badge/Stack-Memory-green.svg
+https://img.shields.io/badge/Heap-Dynamic-red.svg
+https://img.shields.io/badge/Educational-Project-purple.svg
+https://img.shields.io/badge/License-MIT-brightgreen.svg
+https://img.shields.io/badge/Platform-Linux%2520%257C%2520macOS%2520%257C%2520WSL-lightgrey.svg
+https://img.shields.io/badge/Compiler-GCC%25209+-blueviolet.svg
+https://img.shields.io/badge/Beginner-Friendly-success.svg
+
 This project demonstrates how memory works in real C applications by showcasing static memory, stack memory, and dynamic (heap) memory.
 It includes example programs, documentation, and test scripts to help beginners understand how memory allocation works at the system level.
 
