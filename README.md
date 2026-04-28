@@ -1,5 +1,5 @@
 ##    Memory Management in C
-– Static, Stack & Dynamic (Heap) Memory
+ Static, Stack & Dynamic (Heap) Memory
 
 [![C Language](https://img.shields.io/badge/C-Programming-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
 [![Memory Management](https://img.shields.io/badge/Memory-Management-orange.svg)](https://en.wikipedia.org/wiki/Memory_management)
