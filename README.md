@@ -122,7 +122,7 @@ Shows static + stack + heap in one program.
 
 ---
 
-## 🔧 How to Run
+##  How to Run
 
 ```bash
 # Static example
