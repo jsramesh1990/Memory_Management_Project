@@ -1,0 +1,114 @@
+memory-allocator-deep-dive/
+├── README.md                           # Main entry point
+├── CONTRIBUTING.md                     # Contribution guidelines
+├── LICENSE                             # MIT License
+├── Makefile                            # Build automation
+├── .gitignore
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml                      # Continuous integration
+│   │   └── valgrind.yml               # Memory leak checks
+│   └── PULL_REQUEST_TEMPLATE.md
+│
+├── docs/
+│   ├── README.md                       # Documentation index
+│   ├── ARCHITECTURE.md                 # High-level design
+│   ├── ALGORITHMS.md                   # Deep dive into algorithms
+│   ├── PERFORMANCE.md                  # Benchmarks and optimization
+│   ├── SECURITY.md                     # Security considerations
+│   ├── PORTING.md                      # Porting to new platforms
+│   └── api/                           # API documentation
+│       ├── allocator.h.md
+│       └── pool.h.md
+│
+├── include/                           # Public headers
+│   ├── allocator.h                    # Main allocator interface
+│   ├── allocator_config.h            # Configuration macros
+│   ├── pool.h                         # Pool allocator
+│   ├── stack.h                        # Stack allocator
+│   ├── buddy.h                        # Buddy system allocator
+│   ├── slab.h                         # Slab allocator
+│   ├── aligned.h                      # Aligned allocation helpers
+│   ├── debug.h                        # Debugging utilities
+│   └── platform/
+│       ├── linux.h
+│       ├── embedded.h
+│       └── android.h
+│
+├── src/                               # Implementation
+│   ├── allocator.c                    # Core implementation
+│   ├── pool.c
+│   ├── stack.c
+│   ├── buddy.c
+│   ├── slab.c
+│   ├── aligned.c
+│   ├── debug.c
+│   ├── platform/
+│   │   ├── linux_mmap.c              # mmap backend
+│   │   ├── embedded_sbrk.c           # sbrk backend
+│   │   └── android_ion.c             # ION backend
+│   └── allocators/                   # Different allocator strategies
+│       ├── first_fit.c
+│       ├── best_fit.c
+│       ├── next_fit.c
+│       └── worst_fit.c
+│
+├── examples/                          # Usage examples
+│   ├── basic_allocation.c
+│   ├── pool_allocator_demo.c
+│   ├── benchmarking/
+│   │   ├── benchmark_tools.h
+│   │   ├── malloc_vs_custom.c
+│   │   └── fragmentation_test.c
+│   └── real_world/
+│       ├── message_queue.c
+│       ├── game_asset_manager.c
+│       └── network_buffer_pool.c
+│
+├── tests/                            # Comprehensive testing
+│   ├── unit/
+│   │   ├── test_allocator.c
+│   │   ├── test_pool.c
+│   │   ├── test_buddy.c
+│   │   └── test_corner_cases.c
+│   ├── integration/
+│   │   ├── test_fragmentation.c
+│   │   └── test_concurrent.c
+│   └── fuzz/
+│       └── fuzz_allocator.c
+│
+├── benchmarks/                       # Performance measurements
+│   ├── run_benchmarks.sh
+│   ├── throughput.c
+│   ├── latency.c
+│   ├── fragmentation/
+│   │   └── measure_fragmentation.c
+│   └── results/
+│       ├── throughput.csv
+│       └── plots/
+│
+├── tools/                           # Helper tools
+│   ├── visualize_heap.py           # Heap visualization
+│   ├── memory_analyzer.py          # Analyze allocation patterns
+│   ├── plot_performance.py
+│   └── generate_report.sh
+│
+├── scripts/                         # Build & test scripts
+│   ├── build_all.sh
+│   ├── run_all_tests.sh
+│   ├── coverage.sh
+│   └── valgrind_suppressions.supp
+│
+├── docker/                         # Reproducible environments
+│   ├── Dockerfile.ubuntu
+│   ├── Dockerfile.alpine
+│   └── docker-compose.yml
+│
+├── papers/                         # Research papers implemented
+│   ├── README.md
+│   ├── buddy_system.md
+│   ├── slab_allocator.md
+│   └── references.bib
+│
+└── m4/                            # Autotools support
+    └── ax_check_compile_flag.m4
