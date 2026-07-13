@@ -1283,6 +1283,7 @@ While the standard Qualcomm Linux flow uses UEFI and `systemd-boot`, there is a 
 [Back to TOC](#table-of-boot-process)
 
 ## 6. Falcon Mode - U-Boot SPL Fast Boot Feature
+# 6. Falcon Mode - U-Boot SPL Fast Boot Feature
 
 ## Introduction
 
