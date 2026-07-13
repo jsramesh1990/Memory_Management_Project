@@ -6,6 +6,7 @@
 3. [ARM Boot Process (General ARM-based Embedded)](#3-arm-boot-process-general-arm-based-embedded-devices)
 4. [Android Boot Process](#4-android-boot-process-based-on-linux-kernel-mobileembedded-devices)
 5. [Qualcomm Boot Process](#5-qualcomm-boot-process-a-comprehensive-guide)
+6. [Falcon Mode](#Falcon Mode)
 
 ---
 
@@ -1281,5 +1282,391 @@ While the standard Qualcomm Linux flow uses UEFI and `systemd-boot`, there is a 
 ---
 [Back to TOC](#table-of-boot-process)
 
+# 6.Falcon Mode - U-Boot SPL Fast Boot Feature
+
+## Introduction
+
+Falcon Mode is a **U-Boot SPL (Secondary Program Loader) feature** that significantly reduces Linux boot time by **bypassing the full U-Boot stage** and booting the Linux kernel directly from SPL. Although it is not specific to NXP i.MX processors, it is widely used on **i.MX6, i.MX7, i.MX8, i.MX9** and other embedded Linux platforms where boot time is critical. ([U-Boot Documentation][1])
+
+---
+
+## Why Use Falcon Mode?
+
+### The Problem: Slow Boot Times
+
+In embedded systems, boot time is often a critical metric. Traditional boot flows add unnecessary overhead that impacts:
+
+- **User Experience**: Slow startups frustrate users
+- **Safety Systems**: Critical systems need immediate operation
+- **Power Consumption**: Longer boot means more energy usage
+- **Industrial Applications**: Production lines require quick recovery
+- **Automotive**: Infotainment and safety systems need instant response
+
+### Performance Impact
+
+| Stage | Approximate Time |
+|-------|------------------|
+| ROM | 20–50 ms |
+| SPL | 20–100 ms |
+| Full U-Boot | 300–1000 ms |
+| Linux | 1–5 s |
+
+**Savings**: Falcon Mode eliminates 300-1000ms of boot time
+
+---
+
+## Supported Operating Systems
+
+Falcon Mode is designed primarily for **Linux** but can theoretically work with any OS that:
+
+1. Can be loaded by SPL
+2. Accepts boot parameters from the bootloader
+3. Has a compatible boot format
+
+### Primary Targets
+
+| OS | Support Level | Notes |
+|----|--------------|-------|
+| **Linux** | ✅ Full Support | Primary target, extensively tested |
+| **Android** | ✅ Good Support | Requires modifications |
+| **Zephyr** | ⚠️ Limited | Experimental support |
+| **FreeRTOS** | ⚠️ Theoretical | Not commonly used |
+| **uClinux** | ✅ Supported | Works with appropriate configs |
+
+### Linux Support Details
+
+Falcon Mode supports both:
+
+- **ARM Linux** (most common)
+  - i.MX series
+  - Allwinner
+  - Rockchip
+  - STM32MP
+
+- **ARM64 (AArch64)**
+  - i.MX8 series
+  - NVIDIA Jetson
+  - Raspberry Pi (with modifications)
+
+- **PowerPC**
+  - Legacy support
+
+- **RISC-V**
+  - Growing support
+
+---
+
+## Normal i.MX Boot Flow (Without Falcon Mode)
+
+```mermaid
+graph TD
+    A[ROM Code] --> B[SPL]
+    B --> C[Full U-Boot]
+    C --> D[Initialize Peripherals]
+    D --> E[Read Environment]
+    E --> F[Execute Boot Scripts]
+    F --> G[Load Kernel]
+    G --> H[Load DTB]
+    H --> I[Load initrd]
+    I --> J[Linux Kernel]
+```
+
+---
+
+## Falcon Mode Boot Flow
+
+```mermaid
+graph TD
+    A[ROM] --> B[SPL]
+    B --> C[DDR Initialization]
+    C --> D[Clock Initialization]
+    D --> E[Load Kernel]
+    E --> F[Load Device Tree]
+    F --> G[Load Boot Arguments]
+    G --> H[Jump to Linux]
+    H --> I[Linux Kernel]
+    style I fill:#90EE90
+```
+
+---
+
+## Why Full U-Boot Is Slow
+
+Full U-Boot performs many tasks that are unnecessary for production systems:
+
+| Task | Time Impact | Necessity |
+|------|-------------|-----------|
+| Shell initialization | High | ❌ Not for production |
+| Environment loading | Medium | ❌ Not needed |
+| USB initialization | High | ❌ For updates only |
+| Ethernet initialization | High | ❌ For development |
+| Command parser | Medium | ❌ Interactive only |
+| Filesystem support | Medium | ❌ Fixed config |
+| Boot scripts | Medium | ❌ Can be pre-generated |
+| Boot delay countdown | Variable | ❌ User interaction |
+| Device probing | High | ❌ Fixed hardware |
+
+Falcon Mode removes these activities, leaving only the essential initialization needed to start Linux. ([U-Boot Documentation][1])
+
+---
+
+## Basic Principle
+
+```mermaid
+graph LR
+    A[SPL] --> B{Mode Check}
+    B -->|Normal| C[Load u-boot.img]
+    C --> D[Run U-Boot]
+    D --> E[Linux]
+    
+    B -->|Falcon| F[Load Linux Image]
+    F --> G[Load DTB]
+    G --> H[Load Kernel Arguments]
+    H --> I[Jump to Linux]
+    style I fill:#90EE90
+```
+
+---
+
+## Preparing Kernel Arguments
+
+Linux expects:
+- kernel image
+- device tree
+- boot arguments (`bootargs`)
+- optional initrd
+
+### Pre-generating Parameters
+
+```bash
+# Load kernel
+=> load mmc 0:1 ${kernel_addr_r} Image
+
+# Load device tree
+=> load mmc 0:1 ${fdt_addr_r} imx8mm.dtb
+
+# Export boot parameters
+=> spl export fdt ${kernel_addr_r} - ${fdt_addr_r}
+```
+
+This command creates a snapshot of the kernel boot parameters, which is stored on persistent storage. SPL later reloads this snapshot during Falcon Mode boot. ([U-Boot Documentation][2])
+
+---
+
+## Boot Sequence in Detail
+
+### 1. ROM Boot
+The i.MX ROM:
+- selects the boot device
+- loads SPL into OCRAM
+- executes SPL
+
+### 2. SPL
+SPL performs minimal hardware initialization:
+- DDR
+- clocks
+- PMIC
+- UART (optional)
+- watchdog
+- boot media
+
+### 3. SPL Loads
+Instead of `u-boot.img`, it loads:
+- `Image` or `zImage`
+- `board.dtb`
+- Saved boot-argument snapshot
+
+### 4. SPL Jumps Directly
+Equivalent to `booti` but implemented directly within SPL.
+
+---
+
+## Required Configuration Options
+
+### U-Boot Configuration
+
+```text
+CONFIG_SPL=y
+CONFIG_SPL_OS_BOOT=y
+CONFIG_CMD_SPL=y
+CONFIG_SPL_PAYLOAD_ARGS_ADDR
+CONFIG_SPL_OS_BOOT_ARGS
+```
+
+### Key Options Table
+
+| Option | Purpose |
+|--------|---------|
+| `CONFIG_SPL_OS_BOOT` | Enables Falcon Mode |
+| `CONFIG_CMD_SPL` | Enables `spl export` command |
+| `CONFIG_SPL_PAYLOAD_ARGS_ADDR` | RAM address for boot parameters |
+| `CONFIG_SPL_OS_BOOT_ARGS` | Allows SPL to load saved kernel arguments |
+
+([U-Boot Documentation][2])
+
+---
+
+## Decision Logic
+
+A board-specific function decides whether SPL should boot Linux directly or continue to full U-Boot:
+
+```c
+int spl_start_uboot(void)
+{
+    if (RecoveryButtonPressed())
+        return 1;      // Boot U-Boot
+    
+    if (UpdateModeRequested())
+        return 1;      // Boot U-Boot
+    
+    return 0;          // Boot Linux directly
+}
+```
+
+This allows features such as:
+- Recovery mode
+- Firmware update mode
+- Development mode
+- Production fast boot
+
+---
+
+## Memory Layout Example
+
+```
++--------------------+
+| SPL                |
++--------------------+
+
+DDR Memory Map:
+
+0x80000000          +--------------------+
+                    | Linux Image        |
+                    +--------------------+
+                    |                    |
+                    | Device Tree        |
+                    +--------------------+
+                    |                    |
+                    | Kernel Arguments   |
+                    +--------------------+
+                    |                    |
+Jump → Kernel       +--------------------+
+```
+
+---
+
+## Storage Layout Example (eMMC)
+
+```
+Boot Partition
+
++--------------------+  <- 0x00000000
+| SPL                |
++--------------------+  <- 0x00040000
+| U-Boot             |
++--------------------+  <- 0x00100000
+| Linux Kernel       |
++--------------------+  <- 0x00200000
+| Device Tree        |
++--------------------+  <- 0x00300000
+| Falcon Args        |
++--------------------+  <- 0x00400000
+```
+
+The **Falcon Args** area contains the exported kernel parameter snapshot.
+
+---
+
+## Advantages
+
+✅ **Boot time reduction** of 300-1000ms or more
+
+✅ **Simpler production boot path**
+
+✅ **Reduced memory footprint** during boot
+
+✅ **Ideal for products requiring fast startup**:
+   - Automotive infotainment
+   - Industrial HMIs
+   - Consumer appliances
+   - IoT devices
+   - Medical devices
+   - Security cameras
+
+---
+
+## Limitations
+
+Skipping U-Boot also means losing many runtime features:
+
+❌ No U-Boot shell
+❌ No boot delay
+❌ No interactive commands
+❌ No network boot (unless implemented in SPL)
+❌ Limited debugging
+❌ Reduced filesystem support
+❌ Minimal drivers
+❌ No USB mass storage
+❌ No USB gadget modes
+
+**Best Practice**: Use Falcon Mode only in production systems with a fixed boot configuration. Keep U-Boot available for development and updates.
+
+---
+
+## Secure Falcon Mode
+
+Modern U-Boot also supports **Secure Falcon Mode**, which enhances security by:
+
+🔒 Booting a **signed FIT image**
+🔒 Verifying signatures in SPL
+🔒 Disabling fallback to normal U-Boot if verification fails
+🔒 Using the device tree embedded in the signed FIT image instead of a separately stored arguments file
+
+([U-Boot Documentation][1])
+
+---
+
+## Boot-Time Comparison
+
+| Stage | Normal Boot | Falcon Mode |
+|-------|------------|-------------|
+| ROM | ✓ | ✓ |
+| SPL | ✓ | ✓ |
+| Full U-Boot | ✓ | ✗ |
+| Kernel Load | U-Boot | SPL |
+| DTB Load | U-Boot | SPL |
+| Kernel Start | U-Boot | SPL |
+
+### Example Timeline
+
+```
+Normal Boot (~2.5-4.5s)
+ROM  →  SPL  →  U-Boot  →  Kernel  →  Userspace
+[~50ms] [~100ms] [~500ms] [~2s]    [~1s]
+
+Falcon Mode (~1.8-3.5s)
+ROM  →  SPL  →  Kernel  →  Userspace
+[~50ms] [~100ms] [~2s]    [~1s]
+```
+
+---
+
+## Falcon Mode on NXP i.MX
+
+On i.MX processors, Falcon Mode is particularly attractive because the ROM already loads **SPL** first. Once SPL has initialized DDR and essential hardware, it can directly load the Linux kernel, avoiding the full U-Boot stage.
+
+### i.MX Series Support
+
+| Processor | Support Level | Notes |
+|-----------|--------------|-------|
+| i.MX6 | ✅ Full | Mature support |
+| i.MX7 | ✅ Full | Well tested |
+| i.MX8 | ✅ Full | Active development |
+| i.MX9 | ✅ Full | Modern support |
+
+This makes Falcon Mode a natural optimization for systems where the boot flow is fixed and fast startup is more important than interactive bootloader functionality.
+
+---
+[Back to TOC](#table-of-boot-process)
 
 
