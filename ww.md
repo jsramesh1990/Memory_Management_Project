@@ -6,7 +6,7 @@
 [SOC vs SOM-1](#soc-vs-som-1), 
 [Linux Architecture](#linux-architecture), 
 [System Calls](#system-calls), 
-[Process/Thread Management](#processthread-management), 
+[Process-Thread Management](#process-thread-management), 
 [Scheduler](#scheduler), 
 [Signals](#signals), 
 [File Systems](#file-systems), 
@@ -2415,7 +2415,7 @@ exit_group(0) = ?                                 ← System call
 [🔝 Back to Table of Contents](#table-of-contents)
 
 
-## Process/Thread Management 
+## Process-Thread Management 
 
 ---
 
