@@ -450,27 +450,213 @@ Boot ROM → SPL → Bootloader → Kernel → RootFS → Init → Applications
 - On power ON / reset: SoC Boot ROM reads boot mode straps, initializes minimal hardware, selects boot device (eMMC, UFS, SD, USB).
 - Loads bootloader or image container (depending on SoC) into memory.
 
+
+| Aspect | Details |
+|--------|---------|
+| **Location** | On-chip mask ROM |
+| **Starting Point** | After power-on reset |
+| **Function** | • Read boot mode straps<br>• Initialize minimal hardware<br>• Select boot device (eMMC, UFS, SD, USB)<br>• Load bootloader into memory |
+
+
 #### 2️⃣ Bootloader (Fastboot / U-Boot / Little Kernel / OEM Bootloader)
 - Initializes basic hardware (memory, UART, power, clocks).
 - Loads boot image (boot.img) which includes: Linux kernel + ramdisk (for Android) + DTB.
 - May also load recovery image, vendor image, device-specific blobs.
 - May offer fastboot mode, OEM unlock, recovery, flashing interface.
 
+
+| Aspect | Details |
+|--------|---------|
+| **Location in Storage** | Bootloader partition (/dev/block/bootdevice/by-name/bootloader) |
+| **Location in Memory** | Loaded into RAM by Boot ROM |
+| **Starting Point** | Entry point defined by bootloader |
+| **Functions** | • Initialize basic hardware (memory, UART, power, clocks)<br>• Load boot image (boot.img): kernel + ramdisk + DTB<br>• May load recovery image, vendor image, device-specific blobs<br>• Offer fastboot mode, OEM unlock, recovery, flashing interface |
+| **Source Code Location** | • **Little Kernel (LK):** https://github.com/littlekernel/lk<br>• **U-Boot:** https://github.com/u-boot/u-boot |
+
+**Android Boot Image (boot.img):**
+```
+┌──────────────────────────────────────────────────────────────┐
+│ boot.img Layout                                              │
+│                                                              │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Header (boot_img_hdr)                                │  │
+│ │  • Magic: "ANDROID!"                                  │  │
+│ │  • Kernel size, offset                                 │  │
+│ │  • Ramdisk size, offset                                │  │
+│ │  • DTB size, offset                                    │  │
+│ │  • Pagesize                                            │  │
+│ │  • Kernel command line                                 │  │
+│ └────────────────────────────────────────────────────────┘  │
+│                                                              │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Kernel (zImage/Image)                                │  │
+│ │  • Linux kernel image                                  │  │
+│ │  • Typically 8-16MB                                   │  │
+│ └────────────────────────────────────────────────────────┘  │
+│                                                              │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Ramdisk (initramfs)                                  │  │
+│ │  • init.rc                                            │  │
+│ │  • Android init scripts                               │  │
+│ │  • Device-specific files                              │  │
+│ └────────────────────────────────────────────────────────┘  │
+│                                                              │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Device Tree Blob (DTB)                               │  │
+│ │  • Hardware description                                │  │
+│ │  • Platform-specific info                             │  │
+│ └────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Fastboot Commands:**
+```bash
+# Typical fastboot commands
+fastboot devices
+fastboot flash boot boot.img
+fastboot flash system system.img
+fastboot flash vendor vendor.img
+fastboot reboot
+```
+
 #### 3️⃣ Kernel and Init
 - Kernel uncompresses, initializes hardware and drivers.
 - Ramdisk executes init.rc or init.<board>.rc, creating mount points for /system, /vendor, /data.
 - Android-specific components such as SELinux enforcement, Binder driver initialization run.
 
+
+| Aspect | Details |
+|--------|---------|
+| **Location** | boot.img (kernel + ramdisk) |
+| **Starting Point** | Kernel start_kernel() → Android init |
+| **Functions** | • Kernel uncompresses, initializes hardware and drivers<br>• Ramdisk executes init.rc or init.<board>.rc<br>• Mount points for /system, /vendor, /data<br>• SELinux enforcement, Binder driver initialization |
+
+**Android Init Flow:**
+```
+Kernel
+  │
+  ▼
+/init (from ramdisk)
+  │
+  ├── Mount /proc, /sys, /dev
+  ├── Mount /system, /vendor, /data
+  ├── Parse init.rc
+  │   ├── import /init.<board>.rc
+  │   ├── import /vendor/init/vendor.rc
+  │   └── import /system/etc/init/
+  │
+  ├── Start services
+  │   ├── ueventd
+  │   ├── logd
+  │   ├── servicemanager
+  │   ├── hwservicemanager
+  │   └── vold
+  │
+  └── Start Zygote
+```
+
+
 #### 4️⃣ Zygote & Android Runtime (ART/Dalvik)
 - The Zygote process starts (forks for each Android app) and pre-loads core Java classes.
 - The Android Runtime (ART) gets initialized; native and Java services start.
+
+
+| Aspect | Details |
+|--------|---------|
+| **Location** | /system/bin/app_process |
+| **Starting Point** | Zygote main() function |
+| **Functions** | • Pre-load core Java classes<br>• Forks for each Android app<br>• Initialize Android Runtime (ART) |
+
+**Zygote Flow:**
+```
+Zygote
+  │
+  ├── Preload classes
+  │   ├── Framework classes (~2000)
+  │   └── Resources (themes, icons)
+  │
+  ├── Create socket (zygote)
+  ├── Listen for app requests
+  │
+  ├── SystemServer fork
+  │   └── Start system services
+  │
+  └── App forks
+      └── Each app gets copy of Zygote
+```
+
 
 #### 5️⃣ System Server & Services Start
 - Android's system_server starts services: WindowManager, ActivityManager, PackageManager, PowerManager.
 - Boot animation plays.
 
+
+| Aspect | Details |
+|--------|---------|
+| **Location** | /system/framework/services.jar |
+| **Starting Point** | SystemServer.main() |
+| **Functions** | • Start services:<br>  - WindowManager<br>  - ActivityManager<br>  - PackageManager<br>  - PowerManager<br>• Play boot animation |
+
+**System Services:**
+```
+┌──────────────────────────────────────────────────────────────┐
+│ Android System Services                                     │
+│                                                              │
+│ ActivityManagerService (AMS)                                │
+│ ├── Manage app lifecycle                                    │
+│ ├── Manage tasks and activities                            │
+│ └── Handle intents                                          │
+│                                                              │
+│ WindowManagerService (WMS)                                  │
+│ ├── Manage windows                                          │
+│ ├── Handle screen rotation                                  │
+│ └── Manage keyboard/mouse input                            │
+│                                                              │
+│ PackageManagerService (PMS)                                 │
+│ ├── Manage installed packages                               │
+│ ├── Handle permissions                                      │
+│ └── Verify APK signatures                                   │
+│                                                              │
+│ PowerManagerService (PMS)                                   │
+│ ├── Manage power states                                     │
+│ ├── Wake locks                                              │
+│ └── Battery management                                      │
+└──────────────────────────────────────────────────────────────┘
+```
+
+
 #### 6️⃣ Applications & User Interaction
 - Launcher/home screen appears; apps can be launched; system is ready for user interaction.
+
+
+| Aspect | Details |
+|--------|---------|
+| **Location** | • **System apps:** /system/app/, /system/priv-app/<br>• **User apps:** /data/app/<br>• **OEM apps:** /vendor/app/ |
+| **Starting Point** | Launcher application starts |
+| **Functions** | • Launcher/home screen appears<br>• Apps can be launched<br>• System ready for user interaction |
+
+**App Launch Flow:**
+```
+User taps app icon
+        │
+        ▼
+Launcher sends intent to ActivityManager
+        │
+        ▼
+AMS checks if app process exists
+        │
+        ├── No → Zygote forks new process
+        │         └── Load app code
+        │
+        └── Yes → Resume existing process
+        │
+        ▼
+Start app Activity
+        │
+        ▼
+App becomes visible to user
+```
+
 
 ### Additional Important Notes
 - On mobile devices, boot time and responsiveness are critical; many vendors employ techniques like kernel/ramdisk optimizations and minimal services at boot.
