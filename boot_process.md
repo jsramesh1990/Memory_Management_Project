@@ -18,6 +18,16 @@
 - Detects bootable devices (HDD, SSD, USB, network) and loads the bootloader from selected media (MBR, EFI partition).
 - On some embedded systems, BIOS/UEFI is replaced or omitted altogether; the SoC boot-ROM directly loads an embedded bootloader.
 
+BIOS / UEFI Initialization
+
+| Aspect | Details |
+|--------|---------|
+| **Location** | On-board flash memory chip (BIOS/UEFI firmware) |
+| **Starting Point** | Immediately after power-on reset (x86 CPU jumps to reset vector 0xFFFFFFF0) |
+| **Function** | • Perform POST (Power-On Self-Test)<br>• Initialize basic hardware (CPU, RAM, chipset)<br>• Detect bootable devices (HDD, SSD, USB, network)<br>• Load bootloader from MBR or EFI partition |
+| **Source Code** | Proprietary (AMI, Insyde, Phoenix) or open-source (TianoCore EDK2) |
+| **Configuration** | • BIOS settings (CMOS)<br>• UEFI variables (NVRAM)<br>• Boot order configuration |
+
 #### 2️⃣ Bootloader (e.g., GRUB / LILO / Syslinux)
 - Presents menu, allows parameter selection.
 - Loads the Linux kernel image (vmlinuz) and optionally an initial RAM disk (initrd/initramfs).
