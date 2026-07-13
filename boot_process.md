@@ -34,8 +34,6 @@ BIOS / UEFI Initialization
 - Passes kernel parameters (root filesystem location, options) and may load Device Tree on non-x86 architectures.
 - Transfers control to the kernel.
 
-#### 2️⃣ Bootloader (e.g., GRUB / LILO / Syslinux)
-
 | Aspect | Details |
 |--------|---------|
 | **Location in Storage** | • **GRUB:** /boot/grub/ or /boot/efi/EFI/<distro>/<br>• **MBR:** First 512 bytes of boot disk (stage 1)<br>• **EFI:** EFI System Partition (ESP) - /boot/efi/ |
@@ -44,7 +42,6 @@ BIOS / UEFI Initialization
 | **Functions** | • Present boot menu for user selection<br>• Load Linux kernel image (vmlinuz) into memory<br>• Load initial RAM disk (initrd/initramfs)<br>• Pass kernel parameters (root filesystem location)<br>• Transfer control to kernel |
 | **Source Code Location** | • **GRUB:** https://www.gnu.org/software/grub/<br>• **Configuration:** /boot/grub/grub.cfg<br>• **EFI:** /boot/efi/EFI/ |
 | **Key Files** | • **grub.cfg:** Boot menu configuration<br>• **vmlinuz-*:** Kernel image<br>• **initrd.img-*:** Initial RAM disk<br>• **grubenv:** Environment variables |
-
 
 #### 3️⃣ Linux Kernel Initialization
 - Kernel decompresses/unpacks itself, initializes system memory, scheduler, device drivers, peripheral subsystems.
@@ -68,7 +65,6 @@ BIOS / UEFI Initialization
 │  Initrd loaded at: 0x4000000 (64MB) or higher              │
 └──────────────────────────────────────────────────────────────┘
 ```
-#### 3️⃣ Linux Kernel Initialization
 
 | Aspect | Details |
 |--------|---------|
@@ -116,8 +112,6 @@ start_kernel() {
 - The init system (/sbin/init -> systemd or SysV) starts up system services (networking, login managers, GUIs).
 - GUI (Xorg, Wayland, desktop environment) may load depending on system type.
 - User applications launch and system becomes ready for interaction.
-
-#### 4️⃣ Init / systemd & User Space Startup
 
 | Aspect | Details |
 |--------|---------|
@@ -173,13 +167,6 @@ start_kernel() {
 - Init systems are evolving: systemd is now dominant on many distributions.
 - Root filesystem may reside locally (SSD, HDD) or be network-mounted (NFS) depending on target deployment.
 - For secure boot or measured boot on PC/servers, UEFI Secure Boot adds steps of signature verification (not covered in embedded i.MX case).
-
-### 1.5 Additional Important Notes
-- On embedded variants of Linux, you might skip BIOS/UEFI and use U-Boot or other bootloader directly.
-- Init systems are evolving: systemd is now dominant on many distributions.
-- Root filesystem may reside locally (SSD, HDD) or be network-mounted (NFS) depending on target deployment.
-- For secure boot or measured boot on PC/servers, UEFI Secure Boot adds steps of signature verification (not covered in embedded i.MX case).
-
 
 ---
 [Back to TOC](#table-of-boot-process)
