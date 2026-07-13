@@ -411,6 +411,7 @@ start_kernel() {
 **Boot Process Flow:**
 ```
 Boot ROM → SPL → Bootloader → Kernel → RootFS → Init → Applications
+```
 
 #### 3️⃣ Linux Kernel Execution
 - Same as above: decompress, init devices, mount root filesystem.
