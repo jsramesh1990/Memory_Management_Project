@@ -1,6 +1,39 @@
-# Linux Boot Process: A Comprehensive Guide for Embedded Software Engineers
+# Linux Boot Process:
 
-## 1. i.MX Boot Process (NXP i.MX SoCs)
+## 1. Linux Boot Process (General-Purpose Systems, e.g., x86)
+
+### Key Stages
+
+#### 1️⃣ BIOS / UEFI Initialization
+- On power-on, the BIOS/UEFI firmware performs POST (Power-On Self-Test), initializes basic hardware (CPU, RAM, chipset).
+- Detects bootable devices (HDD, SSD, USB, network) and loads the bootloader from selected media (MBR, EFI partition).
+- On some embedded systems, BIOS/UEFI is replaced or omitted altogether; the SoC boot-ROM directly loads an embedded bootloader.
+
+#### 2️⃣ Bootloader (e.g., GRUB / LILO / Syslinux)
+- Presents menu, allows parameter selection.
+- Loads the Linux kernel image (vmlinuz) and optionally an initial RAM disk (initrd/initramfs).
+- Passes kernel parameters (root filesystem location, options) and may load Device Tree on non-x86 architectures.
+- Transfers control to the kernel.
+
+#### 3️⃣ Linux Kernel Initialization
+- Kernel decompresses/unpacks itself, initializes system memory, scheduler, device drivers, peripheral subsystems.
+- Mounts initrd or root filesystem as specified.
+- Kernel then executes the user-space init process.
+
+#### 4️⃣ Init / systemd & User Space Startup
+- The init system (/sbin/init -> systemd or SysV) starts up system services (networking, login managers, GUIs).
+- GUI (Xorg, Wayland, desktop environment) may load depending on system type.
+- User applications launch and system becomes ready for interaction.
+
+### Additional Important Notes
+- On embedded variants of Linux, you might skip BIOS/UEFI and use U-Boot or other bootloader directly.
+- Init systems are evolving: systemd is now dominant on many distributions.
+- Root filesystem may reside locally (SSD, HDD) or be network-mounted (NFS) depending on target deployment.
+- For secure boot or measured boot on PC/servers, UEFI Secure Boot adds steps of signature verification (not covered in embedded i.MX case).
+
+---
+
+## 2. i.MX Boot Process (NXP i.MX SoCs)
 
 ### Key Stages
 
@@ -43,39 +76,6 @@
   - If the selected boot media fails (e.g., no valid image), the Boot ROM may fallback to Serial Download Protocol (SDP) or alternate boot device.
 - **Board/SoC Variations:**
   - Different i.MX series (6,7,8,9) embed different subsystems (System Controller, Cortex-M domains, edge security), so actual boot steps may include additional sub-steps (e.g., SCFW, Cortex-M core boot).
-
----
-
-## 2. Linux Boot Process (General-Purpose Systems, e.g., x86)
-
-### Key Stages
-
-#### 1️⃣ BIOS / UEFI Initialization
-- On power-on, the BIOS/UEFI firmware performs POST (Power-On Self-Test), initializes basic hardware (CPU, RAM, chipset).
-- Detects bootable devices (HDD, SSD, USB, network) and loads the bootloader from selected media (MBR, EFI partition).
-- On some embedded systems, BIOS/UEFI is replaced or omitted altogether; the SoC boot-ROM directly loads an embedded bootloader.
-
-#### 2️⃣ Bootloader (e.g., GRUB / LILO / Syslinux)
-- Presents menu, allows parameter selection.
-- Loads the Linux kernel image (vmlinuz) and optionally an initial RAM disk (initrd/initramfs).
-- Passes kernel parameters (root filesystem location, options) and may load Device Tree on non-x86 architectures.
-- Transfers control to the kernel.
-
-#### 3️⃣ Linux Kernel Initialization
-- Kernel decompresses/unpacks itself, initializes system memory, scheduler, device drivers, peripheral subsystems.
-- Mounts initrd or root filesystem as specified.
-- Kernel then executes the user-space init process.
-
-#### 4️⃣ Init / systemd & User Space Startup
-- The init system (/sbin/init -> systemd or SysV) starts up system services (networking, login managers, GUIs).
-- GUI (Xorg, Wayland, desktop environment) may load depending on system type.
-- User applications launch and system becomes ready for interaction.
-
-### Additional Important Notes
-- On embedded variants of Linux, you might skip BIOS/UEFI and use U-Boot or other bootloader directly.
-- Init systems are evolving: systemd is now dominant on many distributions.
-- Root filesystem may reside locally (SSD, HDD) or be network-mounted (NFS) depending on target deployment.
-- For secure boot or measured boot on PC/servers, UEFI Secure Boot adds steps of signature verification (not covered in embedded i.MX case).
 
 ---
 
