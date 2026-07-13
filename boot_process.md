@@ -215,7 +215,7 @@
 ---
 [Back to TOC](#table-of-boot-process)
 
-# Qualcomm Boot Process: A Comprehensive Guide
+# 5. Qualcomm Boot Process: A Comprehensive Guide
 
 ## Overview
 
