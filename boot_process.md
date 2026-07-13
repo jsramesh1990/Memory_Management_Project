@@ -387,18 +387,51 @@ start_kernel() {
 - Boot-ROM code initializes basic hardware and selects boot media based on straps/fuses.
 - Loads the next stage bootloader (could be U-Boot, Barebox, Little Kernel, etc.).
 
+| Aspect | Details |
+|--------|---------|
+| **Location** | On-chip mask ROM (immutable) |
+| **Starting Point** | After power-on reset, ARM core jumps to 0x00000000 |
+| **Function** | • Initialize basic hardware<br>• Select boot media based on straps/fuses<br>• Load next stage bootloader (U-Boot/Barebox/LK) |
+| **Source Code** | Proprietary (SoC vendor provided) |
+
+
 #### 2️⃣ Bootloader (e.g., U-Boot / Barebox / LK)
 - Initialize DRAM/external memory, set up clocks, UART, peripheral controllers.
 - Load kernel + DTB + (optionally) initrd, pass arguments.
 - May provide UI shell, fastboot/USB, recovery.
 
+| Aspect | Details |
+|--------|---------|
+| **Location in Storage** | Boot partition (e.g., /dev/mmcblk0p1) |
+| **Location in Memory** | • **SPL:** SRAM (typically 64KB-256KB)<br>• **Full Bootloader:** DDR RAM |
+| **Starting Point** | • **Entry:** _start in arch/arm/lib/vectors.S<br>• **Main:** board_init_f() → board_init_r() |
+| **Functions** | • Initialize DRAM/external memory<br>• Set up clocks, UART, peripheral controllers<br>• Load kernel + DTB + initrd<br>• Pass boot arguments to kernel |
+| **Source Code Location** | • **U-Boot:** https://github.com/u-boot/u-boot<br>• **Barebox:** https://barebox.org/ |
+
+**Boot Process Flow:**
+```
+Boot ROM → SPL → Bootloader → Kernel → RootFS → Init → Applications
+
 #### 3️⃣ Linux Kernel Execution
 - Same as above: decompress, init devices, mount root filesystem.
 - Kernel takes care of platform-specific drivers via DTB.
 
+| Aspect | Details |
+|--------|---------|
+| **Location in Storage** | /boot/zImage or /boot/Image |
+| **Location in Memory** | 0x80008000 (ARM64) or 0x1000000 (ARM32) |
+| **Starting Point** | • **Entry:** stext in arch/arm/kernel/head.S<br>• **Kernel Init:** start_kernel() in init/main.c |
+| **Functions** | • Decompress and initialize devices<br>• Mount root filesystem<br>• Platform-specific drivers via DTB |
+
 #### 4️⃣ System Initialization (init/systemd)
 - Starts system services, daemons, applications.
 - Load optional GUI or operate command-line only.
+
+| Aspect | Details |
+|--------|---------|
+| **Location** | /sbin/init (symlink to systemd or busybox) |
+| **Starting Point** | Kernel executes /sbin/init as PID 1 |
+| **Functions** | • Starts system services, daemons<br>• Load optional GUI or command-line only |
 
 ### Additional Important Notes
 - This process is essentially a more generic version of the i.MX sequence when used with ARM-based boards like Raspberry Pi or BeagleBone.
