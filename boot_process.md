@@ -198,4 +198,564 @@
 | **Source Code Location** | • **U-Boot:** https://github.com/u-boot/u-boot<br>• **Board-specific:** board/<vendor>/<board>/<br>• **Configuration:** include/configs/<board>.h<br>• **Device Tree:** arch/arm/dts/<soc>-<board>.dts |
 | **Key Files** | • **board.c:** Board initialization<br>• **ddr.c:** DDR timing configuration<br>• **env:** U-Boot environment variables<br>• **Kconfig:** Build configuration |
 
+```markdown
+# Qualcomm Boot Process: A Comprehensive Guide
+
+## Overview
+
+The Qualcomm boot process is a structured, multi-stage sequence, with a strong emphasis on security through a **"chain of trust"** from the very first stage.
+
+It's important to note that the exact flow can vary based on the specific Qualcomm platform. For instance, a modern Qualcomm Linux system often uses a UEFI-based flow, whereas an older Android phone might use a different second-stage bootloader (like SBL1 or LK). The following is an overview of the key stages found in the Qualcomm boot architecture.
+
+---
+
+## Key Stages of the Qualcomm Boot Process
+
+The boot process involves a series of bootloaders, each loading and verifying the next.
+
+| Stage | Component | Key Responsibilities |
+|:------|:----------|:---------------------|
+| **1️⃣** | **Primary Bootloader (PBL)** | Immutable, on-chip ROM code. Establishes root-of-trust, initializes minimal hardware, loads next bootloader. |
+| **2️⃣** | **eXtensible Bootloader (XBL)** | Major hardware initialization (DDR, PMIC). Loads and verifies subsequent firmware components (TEE, Hypervisor). |
+| **3️⃣** | **UEFI Firmware** | Standard interface between platform and OS. Uses open-source Tianocore EDK2 implementation. |
+| **4️⃣** | **Boot Manager** | On Qualcomm Linux, often `systemd-boot`, a UEFI boot manager that loads OS images from ESP. |
+
+---
+
+## Boot Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      POWER ON / RESET                          │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 1️⃣ Primary Bootloader (PBL)                                    │
+│ • On-chip ROM (hardwired, immutable)                           │
+│ • Establishes Root of Trust                                    │
+│ • Initializes minimal hardware (caches, MMU)                   │
+│ • Detects boot device (eMMC, UFS, SD, USB)                     │
+│ • Loads XBL into internal SoC memory                           │
+│ • Falls back to EDL mode on failure                            │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 2️⃣ eXtensible Bootloader (XBL)                                 │
+│ • Proprietary second-stage bootloader                          │
+│ • Initializes DDR memory (critical step)                       │
+│ • Initializes PMIC, clocks, UART                               │
+│ • Loads and authenticates:                                     │
+│   - Qualcomm TEE (Trusted Execution Environment)               │
+│   - Qualcomm Hypervisor                                        │
+│   - UEFI Firmware Image                                        │
+│ • Verifies cryptographic signatures (Secure Boot)              │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 3️⃣ UEFI Firmware                                               │
+│ • Tianocore EDK2 implementation                                │
+│ • Provides standardized boot environment                       │
+│ • Interfaces with boot manager                                 │
+│ • Runtime services (limited on Qualcomm Linux)                 │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 4️⃣ Boot Manager (systemd-boot)                                 │
+│ • UEFI boot manager                                            │
+│ • Reads configuration from EFI System Partition (ESP)          │
+│ • Loads kernel as EFI stub (CONFIG_EFI_STUB)                   │
+│ • Supports Unified Kernel Images (UKIs)                        │
+│ • Boots Linux kernel directly                                  │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 5️⃣ Linux Kernel                                                │
+│ • EFI stub entry point                                         │
+│ • Decompresses and initializes                                 │
+│ • Mounts root filesystem                                       │
+│ • Starts init system (systemd)                                 │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 6️⃣ User Space                                                  │
+│ • systemd (PID 1)                                              │
+│ • System services start                                        │
+│ • User applications launch                                     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Stage 1: Primary Bootloader (PBL)
+
+### Overview
+The Primary Bootloader is the **hardware-hardcoded boot ROM** that executes immediately after power-on or system reset. It is immutable and cannot be modified.
+
+### Key Functions
+
+| Function | Description |
+|----------|-------------|
+| **Secure Root of Trust** | Establishes the initial security for the boot process. Contains the root keys for signature verification. |
+| **Boot Device Selection** | Reads fuse settings and strap pins to identify the primary storage device (eMMC, UFS, SD card, USB). |
+| **Loading XBL** | Loads the next-stage bootloader (XBL) into internal SoC memory (OCRAM/IRAM). |
+| **Emergency Download Mode (EDL)** | If loading XBL fails, enters EDL mode - a low-level recovery mode that allows firmware flashing from a host PC via USB. |
+
+### PBL Details
+
+| Aspect | Details |
+|--------|---------|
+| **Location** | On-chip mask ROM (immutable) |
+| **Memory** | ~256KB-512KB internal RAM |
+| **Execution Address** | Fixed hardware address (e.g., 0x00000000) |
+| **Source Code** | Proprietary - not accessible |
+| **Debug Access** | Limited - JTAG usually disabled |
+
+### EDL Mode
+```
+┌────────────────────────────────────────────────────────────┐
+│ EDL (Emergency Download Mode)                             │
+│ • Entered when PBL fails to load XBL                      │
+│ • USB communication active                                │
+│ • QPST, QFIL, or similar tools can flash firmware         │
+│ • Requires special USB cable or button combination        │
+│ • Usually requires authorized account for secure devices  │
+└────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Stage 2: eXtensible Bootloader (XBL)
+
+### Overview
+The eXtensible Bootloader is a proprietary second-stage bootloader that performs broader system initialization and loads subsequent firmware components.
+
+### Key Functions
+
+| Function | Description |
+|----------|-------------|
+| **Hardware Initialization** | Initializes CPU caches, MMU, Power Management IC (PMIC), clocks, and DDR memory. |
+| **DDR Initialization** | Configures and initializes DDR memory - without this, main system memory is unavailable. |
+| **Loading Firmware** | Loads and authenticates Qualcomm TEE, Hypervisor, and UEFI images. |
+| **Secure Boot** | Verifies cryptographic signatures on all subsequent boot components. |
+
+### XBL Loading Flow
+
+```
+XBL Execution
+        │
+        ▼
+┌───────────────────────────────┐
+│ 1. CPU/MMU Initialization      │
+│ 2. PMIC Initialization          │
+│ 3. Clock Setup                  │
+│ 4. DDR Initialization          │
+│ 5. UART Console Setup          │
+└───────────────────────────────┘
+        │
+        ▼
+┌───────────────────────────────┐
+│ Load and Verify:               │
+│ • TEE (TrustZone)             │
+│ • Hypervisor                   │
+│ • UEFI Firmware                │
+│ • Other platform firmwares    │
+└───────────────────────────────┘
+        │
+        ▼
+┌───────────────────────────────┐
+│ Jump to UEFI Firmware         │
+└───────────────────────────────┘
+```
+
+### XBL Firmware Components
+
+| Component | Description |
+|-----------|-------------|
+| **TEE (Trusted Execution Environment)** | Secure world environment based on ARM TrustZone. Handles secure services, cryptography, key management. |
+| **Hypervisor** | Manages virtualization, allows multiple OS instances, provides isolation between secure and non-secure worlds. |
+| **UEFI Firmware** | Standard boot environment loaded next. |
+
+### XBL Memory Layout (Example)
+```
+┌──────────────────────────────────────────────────────────────┐
+│  SoC Internal Memory (OCRAM/IRAM)                           │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │  0x00000000 - 0x00010000: Boot ROM (PBL)             │ │
+│  │  0x00010000 - 0x00050000: XBL Code                   │ │
+│  │  0x00050000 - 0x00080000: Stack/Heap                 │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                              │
+│  DDR Memory (after initialization)                          │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │  0x80000000 - 0x80100000: TEE Firmware               │ │
+│  │  0x80200000 - 0x80500000: Hypervisor Image           │ │
+│  │  0x80500000 - 0x80A00000: UEFI Firmware             │ │
+│  │  0x80A00000 - 0x90000000: Reserved / Kernel          │ │
+│  └────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Stage 3: UEFI Firmware
+
+### Overview
+UEFI acts as the software interface between the operating system and the platform firmware. Qualcomm uses the open-source **Tianocore EDK2** implementation.
+
+### Key Functions
+
+| Function | Description |
+|----------|-------------|
+| **Standardized Environment** | Provides a standard environment for booting an OS and running UEFI applications. |
+| **Boot Services** | Provides services for booting - disk access, memory allocation, device handles. |
+| **Runtime Services** | Limited runtime services (generally not enabled in Qualcomm Linux boot flow). |
+| **UEFI Shell** | Command-line interface for UEFI environment (optional). |
+
+### UEFI Components
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ UEFI Firmware Structure                                     │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  SEC (Security Phase)                                 │  │
+│ │  • Initial trust establishment                        │  │
+│ │  • Minimal architecture setup                         │  │
+│ └────────────────────────────────────────────────────────┘  │
+│                          │                                   │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  PEI (Pre-EFI Initialization)                         │  │
+│ │  • Early hardware initialization                       │  │
+│ │  • Memory discovery                                    │  │
+│ └────────────────────────────────────────────────────────┘  │
+│                          │                                   │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  DXE (Driver Execution Environment)                   │  │
+│ │  • UEFI driver dispatch                               │  │
+│ │  • Device enumeration                                 │  │
+│ │  • Boot device discovery                              │  │
+│ └────────────────────────────────────────────────────────┘  │
+│                          │                                   │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  BDS (Boot Device Selection)                          │  │
+│ │  • Boot order processing                              │  │
+│ │  • Boot Manager execution                             │  │
+│ └────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### UEFI Variable Storage
+- **Location:** SPI-NOR flash or partition
+- **Purpose:** Stores boot configuration, boot order, secure boot keys
+- **Access:** Via `efibootmgr` in Linux
+
+```bash
+# Example: List UEFI boot entries
+efibootmgr -v
+
+# Example: Add new boot entry
+efibootmgr -c -d /dev/sda -p 1 -L "Linux" -l \\vmlinuz-linux
+```
+
+---
+
+## Stage 4: Boot Manager (systemd-boot)
+
+### Overview
+For Qualcomm Linux devices, the boot manager is often **systemd-boot** (formerly known as gummiboot). It is a UEFI boot manager that loads boot entries from the EFI System Partition.
+
+### Key Functions
+
+| Function | Description |
+|----------|-------------|
+| **UEFI Boot Manager** | Complies with UEFI Boot Manager specification. |
+| **ESP Reading** | Reads configuration from EFI System Partition (ESP), mounted as `/boot` or `/efi`. |
+| **Kernel Loading** | Loads kernel as EFI stub (`CONFIG_EFI_STUB`). |
+| **UKI Support** | Supports Unified Kernel Images (single EFI executables). |
+
+### Boot Manager Flow
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ systemd-boot Boot Flow                                      │
+│                                                              │
+│ 1. UEFI loads systemd-boot.efi from ESP                     │
+│    (/EFI/systemd/systemd-boot.efi)                          │
+│                                                              │
+│ 2. systemd-boot reads configuration from:                    │
+│    /loader/entries/*.conf                                   │
+│                                                              │
+│ 3. Each .conf file specifies:                                │
+│    • title   "Qualcomm Linux"                               │
+│    • linux   /vmlinuz-linux                                 │
+│    • initrd  /initramfs-linux.img                           │
+│    • options root=/dev/mmcblk0p2 rootwait rw               │
+│                                                              │
+│ 4. systemd-boot displays boot menu (if configured)          │
+│                                                              │
+│ 5. Selected entry is loaded and booted                      │
+│                                                              │
+│ 6. Kernel executed as EFI stub                              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### EFI System Partition (ESP) Layout
+```
+┌──────────────────────────────────────────────────────────────┐
+│ /dev/mmcblk0p1 (EFI System Partition - FAT32)              │
+│                                                              │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  /EFI/                                                 │  │
+│ │  ├── systemd/                                         │  │
+│ │  │   └── systemd-boot.efi                             │  │
+│ │  └── qualcomm/                                         │  │
+│ │      └── boot.efi (optional)                          │  │
+│ ├── /loader/                                             │  │
+│ │   ├── entries/                                         │  │
+│ │   │   ├── qualcomm.conf                               │  │
+│ │   │   └── qualcomm-fallback.conf                      │  │
+│ │   └── loader.conf                                      │  │
+│ ├── /vmlinuz-linux (kernel)                              │  │
+│ └── /initramfs-linux.img (initramfs)                    │  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Example boot entry (qualcomm.conf)
+```conf
+title   Qualcomm Linux
+linux   /vmlinuz-linux
+initrd  /initramfs-linux.img
+options root=/dev/mmcblk0p2 rootwait rw console=ttyS0,115200 earlycon
+```
+
+---
+
+## Stage 5: Linux Kernel (EFI Stub)
+
+### Overview
+The Qualcomm Linux kernel is often built as an **EFI stub** (`CONFIG_EFI_STUB`), which means the UEFI firmware can load and boot the kernel directly without a conventional bootloader like GRUB.
+
+### Kernel Entry Point
+```c
+// arch/arm64/kernel/efi.c
+efi_status_t efi_enter_kernel(unsigned long entry_point, 
+                              void *image_handle, 
+                              efi_system_table_t *sys_table)
+```
+
+### Kernel Boot Flow
+```
+┌──────────────────────────────────────────────────────────────┐
+│ Kernel Boot Flow (EFI Stub)                                 │
+│                                                              │
+│ 1. UEFI loads vmlinuz-linux (EFI executable)               │
+│                                                              │
+│ 2. EFI stub code executes:                                  │
+│    • Retrieves command line from UEFI                      │
+│    • Gets memory map                                        │
+│    • Gets system table                                      │
+│                                                              │
+│ 3. Kernel decompresses itself                               │
+│                                                              │
+│ 4. start_kernel() executed:                                 │
+│    • CPU initialization                                     │
+│    • Memory management                                      │
+│    • Device tree parsing (from UEFI)                       │
+│    • Driver initialization                                  │
+│                                                              │
+│ 5. Root filesystem mounted                                  │
+│                                                              │
+│ 6. init process (PID 1) started                            │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Device Tree on Qualcomm
+- Qualcomm platforms typically use **Device Tree** for hardware description
+- UEFI provides device tree to kernel via EFI configuration table
+- Device tree overlay support available for modular configurations
+
+---
+
+## Stage 6: User Space
+
+### Overview
+After the kernel mounts the root filesystem, the user space initialization begins.
+
+### Init Systems
+| System | Description |
+|--------|-------------|
+| **systemd** | Primary init system for Qualcomm Linux |
+| **Android init** | Used for Android-based Qualcomm devices |
+| **BusyBox init** | Minimal init for small systems |
+
+### systemd Boot Flow
+```
+┌──────────────────────────────────────────────────────────────┐
+│ systemd Boot Flow                                            │
+│                                                              │
+│ 1. Kernel executes /sbin/init -> systemd (PID 1)           │
+│                                                              │
+│ 2. systemd loads units:                                     │
+│    • /etc/systemd/system/                                   │
+│    │   └── basic.target                                    │
+│    │   └── multi-user.target                               │
+│    │   └── graphical.target                                │
+│    └── /usr/lib/systemd/system/                            │
+│                                                              │
+│ 3. System services start:                                   │
+│    • systemd-logind                                         │
+│    • systemd-networkd                                       │
+│    • systemd-resolved                                       │
+│    • sshd                                                   │
+│    • getty                                                  │
+│                                                              │
+│ 4. User applications start                                  │
+│                                                              │
+│ 5. System ready for interaction                            │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Secure Boot on Qualcomm
+
+### Chain of Trust
+```
+┌──────────────────────────────────────────────────────────────┐
+│ Qualcomm Secure Boot Chain of Trust                         │
+│                                                              │
+│ PBL ───► XBL ───► TEE ───► UEFI ───► Boot Manager ──► Kernel │
+│  │        │        │        │          │               │     │
+│  │   ┌────┘        │        │          │               │     │
+│  │   │             │        │          │               │     │
+│  │   ├─ Signature  │        │          │               │     │
+│  │   │  Verification│       │          │               │     │
+│  │   ▼             ▼        ▼          ▼               ▼     │
+│  └───► Each stage verifies the next stage's signature     │
+│                                                              │
+│  Keys:                                                       │
+│  • Root Key: Hardcoded in PBL                               │
+│  • OEM Keys: Used for XBL and firmware                      │
+│  • Platform Keys: Used for UEFI and kernel                 │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Secure Boot Features
+| Feature | Description |
+|---------|-------------|
+| **Secure Boot** | Each stage verified by previous stage using cryptographic signatures. |
+| **Trusted Execution Environment (TEE)** | Provides secure services and key management. |
+| **Firmware Encryption** | Firmware images encrypted to prevent reverse engineering. |
+| **Rollback Protection** | Prevents downgrading to older, vulnerable firmware versions. |
+| **Debug Lock** | JTAG/USB debug access requires authentication. |
+
+---
+
+## Custom Bootloader Options (U-Boot)
+
+While the standard Qualcomm Linux flow uses UEFI and `systemd-boot`, there is a growing effort to support the open-source **U-Boot** bootloader.
+
+### Methods of Using U-Boot
+
+#### Method 1: Chainloading
+```
+┌──────────────────────────────────────────────────────────────┐
+│ U-Boot Chainloading                                         │
+│                                                              │
+│ PBL → XBL → UEFI → U-Boot (from boot partition) → Kernel   │
+│                       │                                      │
+│                       └── U-Boot can be placed in boot       │
+│                           partition and loaded by ABL        │
+│                           (Android Bootloader)              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+#### Method 2: Replacing UEFI (XBL Method)
+```
+┌──────────────────────────────────────────────────────────────┐
+│ U-Boot Replacing UEFI                                       │
+│                                                              │
+│ PBL → XBL → U-Boot (replaces EDK2/UEFI image) → Kernel    │
+│                │                                             │
+│                └── U-Boot becomes the primary bootloader    │
+│                    after XBL                                │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### U-Boot Configuration for Qualcomm
+```c
+// Qualcomm-specific U-Boot configuration
+#define CONFIG_ARCH_SNAPDRAGON
+#define CONFIG_MACH_QCOM
+#define CONFIG_QCOM_IPQ
+#define CONFIG_QCOM_SYSTEM_RESET
+#define CONFIG_QCOM_SERIAL
+#define CONFIG_QCOM_SPMI
+```
+
+---
+
+## Storage Layout Comparison
+
+### Qualcomm Linux (UEFI/ESP)
+```
+┌──────────────────────────────────────────────────────────────┐
+│ /dev/mmcblk0                                                 │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Partition 1 (ESP - FAT32):                           │  │
+│ │  • /EFI/systemd/systemd-boot.efi                     │  │
+│ │  • /EFI/qualcomm/                                    │  │
+│ │  • /loader/entries/*.conf                            │  │
+│ │  • /vmlinuz-linux (kernel)                           │  │
+│ │  • /initramfs-linux.img                              │  │
+│ └────────────────────────────────────────────────────────┘  │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Partition 2 (RootFS - ext4):                         │  │
+│ │  • /bin, /sbin, /etc, /usr                           │  │
+│ │  • /lib, /sys, /proc, /dev                           │  │
+│ └────────────────────────────────────────────────────────┘  │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Partition 3 (Data - ext4):                           │  │
+│ │  • /home, /var                                        │  │
+│ │  • User data, logs                                    │  │
+│ └────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Qualcomm Android (Legacy)
+```
+┌──────────────────────────────────────────────────────────────┐
+│ /dev/mmcblk0 (eMMC)                                          │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Partition 1 (bootloader):                            │  │
+│ │  • SBL1, LK (Little Kernel), Recovery                │  │
+│ └────────────────────────────────────────────────────────┘  │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Partition 2 (boot):                                  │  │
+│ │  • boot.img (kernel + ramdisk)                       │  │
+│ └────────────────────────────────────────────────────────┘  │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Partition 3 (system):                                │  │
+│ │  • system.img (Android OS)                           │  │
+│ └────────────────────────────────────────────────────────┘  │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Partition 4 (vendor):                                │  │
+│ │  • vendor.img (vendor binaries)                      │  │
+│ └────────────────────────────────────────────────────────┘  │
+│ ┌────────────────────────────────────────────────────────┐  │
+│ │  Partition 5 (userdata):                              │  │
+│ │  • /data (user data, apps)                           │  │
+│ └────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+
+
 
