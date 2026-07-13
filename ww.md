@@ -1,7 +1,4 @@
-
 ## 4. Embedded Systems & Linux
-
-[Microcontroller vs Microprocessor](#microcontroller-vs-microprocessor), [Harvard vs Von Neumann](#harvard-vs-von-neumann), [Boot Process](#boot-process), [SOC vs SOM-1](#soc-vs-som-1), [Linux Architecture](#linux-architecture), [System Calls](#system-calls), [Process/Thread Management](#processthread-management), [Scheduler](#scheduler), [Signals](#signals), [File Systems](#file-systems), [IPC](#ipc), [Linux Device Drivers](#linux-device-drivers), [Interrupts](#interrupts), [ISR](#isr), [Concurrency](#concurrency)
 
 [Microcontroller vs Microprocessor](#microcontroller-vs-microprocessor), 
 [Harvard vs Von Neumann](#harvard-vs-von-neumann), 
