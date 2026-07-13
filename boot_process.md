@@ -198,7 +198,7 @@
 | **Source Code Location** | • **U-Boot:** https://github.com/u-boot/u-boot<br>• **Board-specific:** board/<vendor>/<board>/<br>• **Configuration:** include/configs/<board>.h<br>• **Device Tree:** arch/arm/dts/<soc>-<board>.dts |
 | **Key Files** | • **board.c:** Board initialization<br>• **ddr.c:** DDR timing configuration<br>• **env:** U-Boot environment variables<br>• **Kconfig:** Build configuration |
 
-```markdown
+---
 # Qualcomm Boot Process: A Comprehensive Guide
 
 ## Overview
