@@ -173,21 +173,6 @@
 
 ---
 
-## 🧠 Simplified Summary
-
-| Boot Layer | Main Engineer Focus |
-|------------|---------------------|
-| **Boot ROM** | Understand boot device order & secure fuse setup |
-| **Bootloader** | Board bring-up (DDR, PMIC, peripherals) |
-| **Kernel** | Add device drivers, edit Device Tree |
-| **RootFS** | Build system image (Yocto/Buildroot) |
-| **Init System** | Customize service startup (systemd / init.d) |
-| **Application Layer** | Develop and test user-space applications |
-| **Security** | Enable Secure Boot, encryption, TrustZone |
-| **Debug** | Analyze boot logs, fix hangs, test full boot cycle |
-
----
-
 ## 🗂️ Boot Components: Locations, Functions & Starting Points
 
 ### 1️⃣ Boot ROM / Firmware
@@ -213,11 +198,4 @@
 | **Source Code Location** | • **U-Boot:** https://github.com/u-boot/u-boot<br>• **Board-specific:** board/<vendor>/<board>/<br>• **Configuration:** include/configs/<board>.h<br>• **Device Tree:** arch/arm/dts/<soc>-<board>.dts |
 | **Key Files** | • **board.c:** Board initialization<br>• **ddr.c:** DDR timing configuration<br>• **env:** U-Boot environment variables<br>• **Kconfig:** Build configuration |
 
-**U-Boot Boot Flow:**
-```c
-// arch/arm/lib/crt0.S
-_start → board_init_f() → board_init_r() → main_loop()
 
-// board_init_f(): Early init (CPU, clocks, DDR)
-// board_init_r(): Full init (peripherals, environment)
-// main_loop(): Command console or auto-boot
