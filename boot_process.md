@@ -1,4 +1,13 @@
-# Linux Boot Process:
+# Boot Process:
+
+# Table of Boot Process
+1. [Linux Boot Process (x86/General Purpose)](#1-linux-boot-process-x86general-purpose)
+2. [i.MX Boot Process (NXP i.MX SoCs)](#2-imx-boot-process-nxp-imx-socs)
+3. [ARM Boot Process (General ARM-based Embedded)](#3-arm-boot-process-general-arm-based-embedded-devices)
+4. [Android Boot Process](#4-android-boot-process-based-on-linux-kernel-mobileembedded-devices)
+5. [Qualcomm Boot Process](#5-qualcomm-boot-process-a-comprehensive-guide)
+
+---
 
 ## 1. Linux Boot Process (General-Purpose Systems, e.g., x86)
 
@@ -32,6 +41,7 @@
 - For secure boot or measured boot on PC/servers, UEFI Secure Boot adds steps of signature verification (not covered in embedded i.MX case).
 
 ---
+[Back to TOC](#table-of-boot-process)
 
 ## 2. i.MX Boot Process (NXP i.MX SoCs)
 
@@ -78,6 +88,7 @@
   - Different i.MX series (6,7,8,9) embed different subsystems (System Controller, Cortex-M domains, edge security), so actual boot steps may include additional sub-steps (e.g., SCFW, Cortex-M core boot).
 
 ---
+[Back to TOC](#table-of-boot-process)
 
 ## 3. ARM Boot Process (General ARM-based Embedded Devices)
 
@@ -108,6 +119,7 @@
 - Device Tree is essential for hardware abstraction in many ARM SoCs.
 
 ---
+[Back to TOC](#table-of-boot-process)
 
 ## 4. Android Boot Process (Based on Linux Kernel, Mobile/Embedded Devices)
 
@@ -145,6 +157,7 @@
 - The root filesystem layout is different: /system, /vendor, /boot, /recovery, and user data partition—so the mount and init process is tailored for Android.
 
 ---
+[Back to TOC](#table-of-boot-process)
 
 ## 5. Summary Table (All Boot Processes)
 
@@ -172,6 +185,7 @@
 | **7️⃣** | **Debug & Validation** | • Bring-up hardware (UART, DDR, I2C, SPI, GPIO tests)<br>• Use serial console logs<br>• Use oscilloscope, logic analyzer for signal-level debug<br>• Kernel crash / panic analysis<br>• Root cause analysis for boot hangs | ➤ JTAG, OpenOCD<br>➤ minicom / picocom<br>➤ GDB cross-debugging |
 
 ---
+[Back to TOC](#table-of-boot-process)
 
 ## 🗂️ Boot Components: Locations, Functions & Starting Points
 
@@ -199,6 +213,8 @@
 | **Key Files** | • **board.c:** Board initialization<br>• **ddr.c:** DDR timing configuration<br>• **env:** U-Boot environment variables<br>• **Kconfig:** Build configuration |
 
 ---
+[Back to TOC](#table-of-boot-process)
+
 # Qualcomm Boot Process: A Comprehensive Guide
 
 ## Overview
@@ -755,7 +771,7 @@ While the standard Qualcomm Linux flow uses UEFI and `systemd-boot`, there is a 
 ```
 
 ---
-
+[Back to TOC](#table-of-boot-process)
 
 
 
