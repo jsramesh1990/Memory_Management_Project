@@ -182,6 +182,35 @@ start_kernel() {
 - **Loads the next stage bootloader** (typically SPL or direct U-Boot) from the selected boot device.
 - **Important note:** On modern i.MX8/i.MX9, the Boot ROM may first load a "container" image which includes Firmware for the System Controller (SCFW), Security Controller (SECO), and others.
 
+| Aspect | Details |
+|--------|---------|
+| **Location** | On-chip mask ROM (immutable) |
+| **Starting Point** | Immediately after power-on reset (ARM core jumps to 0x00000000) |
+| **Function** | • Execute immediately after power-on reset<br>• Read boot-mode selectors (fuses, strap pins)<br>• Initialize on-chip RAM (OCRAM/TCM)<br>• Load SPL or U-Boot from boot media<br>• Verify signatures (if secure boot enabled) |
+| **Source Code** | Proprietary (NXP-provided, not accessible) |
+| **Configuration** | • BOOT_MODE pins<br>• Fuses (OTP bits)<br>• Boot media selection registers |
+
+**Boot ROM Memory Layout (i.MX8M):**
+```
+┌──────────────────────────────────────────────────────────────┐
+│  i.MX8M Boot ROM Memory Map                                 │
+│                                                              │
+│  OCRAM (256KB):                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │  0x900000 - 0x900000: Boot ROM (fixed)               │ │
+│  │  0x900000 - 0x920000: SPL Load Area                  │ │
+│  │  0x920000 - 0x930000: Stack                          │ │
+│  │  0x930000 - 0x940000: Heap                           │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                              │
+│  Boot Media Options:                                         │
+│  • eMMC (mmc0/mmc1)                                        │
+│  • SD Card (mmc0/mmc1)                                     │
+│  • SPI-NOR Flash                                           │
+│  • NAND Flash                                              │
+│  • USB (Serial Download Protocol)                          │
+└──────────────────────────────────────────────────────────────┘
+
 #### 2️⃣ Secondary Bootloader (SPL → full U-Boot) / U-Boot
 - **If SPL is used:**
   - SPL runs in OCRAM and performs early hardware init (e.g., DDR controller, clocks).
@@ -195,6 +224,75 @@ start_kernel() {
   - May offer a console shell, boot prompt, networking, fastboot mode, recovery mode.
 - **Important note:** On i.MX family, modern features like "Falcon Mode" are supported to reduce boot time by skipping full U-Boot and going direct to kernel.
 
+
+| Aspect | Details |
+|--------|---------|
+| **Location in Storage** | • **SPL:** First 32-64KB of boot media<br>• **U-Boot:** Boot partition (e.g., /dev/mmcblk0p1) |
+| **Location in Memory** | • **SPL:** OCRAM (0x900000 - 0x920000)<br>• **U-Boot:** DDR RAM (0x40000000 or 0x80000000) |
+| **Starting Point** | • **SPL Entry:** _start → board_init_f()<br>• **U-Boot Entry:** board_init_f() → board_init_r() |
+| **Functions** | • Initialize DDR memory, clocks, PMIC<br>• Load kernel + DTB + initrd from storage<br>• Provide boot console and command interface<br>• Support fastboot, recovery, network boot<br>• Pass bootargs and DTB address to kernel |
+| **Source Code Location** | • **U-Boot:** https://github.com/u-boot/u-boot<br>• **Board-specific:** board/freescale/<board>/<br>• **Configuration:** include/configs/<board>.h |
+| **Key Files** | • **board.c:** Board initialization<br>• **ddr.c:** DDR timing configuration<br>• **env:** U-Boot environment variables |
+
+**U-Boot Flow:**
+```c
+// arch/arm/lib/crt0.S
+_start → board_init_f() → board_init_r() → main_loop()
+
+// board_init_f(): Early init (CPU, clocks, DDR)
+// board_init_r(): Full init (peripherals, environment)
+// main_loop(): Command console or auto-boot
+```
+
+**U-Boot Boot Flow Diagram:**
+```
+┌──────────────────────────────────────────────────────────────┐
+│ U-Boot Execution Flow                                        │
+│                                                              │
+│ SPL (OCRAM)                                                  │
+│  │                                                           │
+│  ├─ Initialize DDR                                           │
+│  ├─ Initialize Clocks                                        │
+│  ├─ Initialize PMIC                                          │
+│  └─ Load U-Boot from Storage                                 │
+│       │                                                      │
+│       ▼                                                      │
+│ Full U-Boot (DDR)                                            │
+│  │                                                           │
+│  ├─ board_init_f()                                           │
+│  │   ├─ CPU/MMU init                                        │
+│  │   ├─ Serial console                                      │
+│  │   ├─ Environment init                                    │
+│  │   └─ Memory allocation                                   │
+│  │                                                           │
+│  ├─ board_init_r()                                           │
+│  │   ├─ I2C/SPI init                                        │
+│  │   ├─ USB init                                            │
+│  │   ├─ Ethernet init                                       │
+│  │   ├─ Storage init (MMC/SD/NAND)                         │
+│  │   └─ Environment load                                    │
+│  │                                                           │
+│  ├─ main_loop()                                              │
+│  │   ├─ Boot delay (if configured)                          │
+│  │   ├─ Execute bootcmd                                     │
+│  │   └─ Console shell (if user interrupts)                  │
+│  │                                                           │
+│  └─ Load and boot kernel                                     │
+│      ├─ Load zImage/Image                                   │
+│      ├─ Load DTB                                             │
+│      ├─ Load initrd (optional)                              │
+│      └─ Jump to kernel (bootz/booti)                       │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**U-Boot Environment Variables:**
+```bash
+# Typical U-Boot environment
+bootcmd=mmc dev 1; fatload mmc 1:1 0x80800000 zImage; fatload mmc 1:1 0x83000000 imx8mm.dtb; bootz 0x80800000 - 0x83000000
+bootargs=console=ttymxc1,115200 root=/dev/mmcblk1p2 rootwait rw
+```
+
+
 #### 3️⃣ Linux Kernel Execution
 - U-Boot loads the kernel (zImage/Image) into RAM, sets up DTB and bootargs, then jumps into kernel entry point.
 - Kernel uncompresses, initializes CPU(s), memory management, device drivers, peripheral initialization.
@@ -202,10 +300,71 @@ start_kernel() {
 - Kernel mounts the root filesystem (or an initramfs/initrd) and transitions to user-space.
 - **Important note:** For secure boot, trusted firmware (e.g., ARM TF-A), SECO, SCFW must be loaded prior to kernel on many i.MX8/9 devices.
 
+
+| Aspect | Details |
+|--------|---------|
+| **Location in Storage** | /boot/zImage or /boot/Image (ext4 partition) |
+| **Location in Memory** | • **Kernel:** 0x80008000 (ARM64) or 0x1000000 (ARM32)<br>• **DTB:** 0x83000000 (or just below kernel)<br>• **initrd:** 0x84000000 (or specified address) |
+| **Starting Point** | • **Entry:** stext in arch/arm/kernel/head.S<br>• **Kernel Init:** start_kernel() in init/main.c<br>• **Arch Setup:** setup_arch() in arch/arm/kernel/setup.c |
+| **Functions** | • Decompress and relocate itself<br>• Initialize CPU cores, memory management<br>• Setup device drivers via Device Tree<br>• Mount root filesystem<br>• Start init process (PID 1) |
+| **Source Code Location** | • **Kernel:** https://www.kernel.org/<br>• **Arch-specific:** arch/arm/, arch/arm64/<br>• **Device Tree:** arch/arm/boot/dts/ |
+
+**Kernel Flow:**
+```c
+// arch/arm/kernel/head.S
+stext → __enable_mmu() → __mmap_switched() → start_kernel()
+
+// init/main.c
+start_kernel() {
+    setup_arch()        // Parse DTB, set up memory
+    mm_init()           // Memory management init
+    sched_init()        // Scheduler init
+    init_IRQ()          // Interrupt controller init
+    time_init()         // Timer init
+    console_init()      // Serial console init
+    rest_init()         // Start kernel threads
+}
+```
+
+**i.MX Memory Layout:**
+```
+┌──────────────────────────────────────────────────────────────┐
+│  i.MX8M DDR Memory Layout                                   │
+│                                                              │
+│  0x40000000 - 0x40100000: U-Boot (2MB)                    │
+│  0x40400000 - 0x40400000: Environment                     │
+│  0x80000000 - 0x80000000: Kernel (zImage ~8MB)            │
+│  0x82000000 - 0x82200000: DTB (~2MB)                     │
+│  0x83000000 - 0x84000000: initrd (if used)               │
+│  0x90000000 - 0xFFFFFFFF: User space applications         │
+└──────────────────────────────────────────────────────────────┘
+```
+
+
 #### 4️⃣ Root Filesystem & Init Process
 - Root filesystem (e.g., ext4, SquashFS, UBIFS, or network root) is mounted.
 - The init system (either systemd, busybox init, or other) starts /sbin/init (or equivalent).
 - System services are brought up, user-space processes start.
+
+
+| Aspect | Details |
+|--------|---------|
+| **Location in Storage** | /dev/mmcblk1p2 (ext4 partition) |
+| **Location in Memory** | Mounted at / (root directory) |
+| **Functions** | • Provide Linux system hierarchy (/bin, /sbin, /etc)<br>• Hold system binaries, libraries, configs<br>• Store init scripts and systemd units<br>• Provide device nodes (/dev)<br>• Hold user data (/home, /root) |
+| **Source Code Location** | Created using Yocto/Buildroot/Debootstrap |
+| **Key Directories** | • **/bin:** Essential user binaries<br>• **/sbin:** System binaries<br>• **/etc:** Configuration files<br>• **/lib:** Shared libraries<br>• **/usr:** User programs<br>• **/dev:** Device files<br>• **/proc:** Process information (virtual)<br>• **/sys:** Kernel and device info (virtual) |
+
+**RootFS Types:**
+| Type | Description | Use Case |
+|------|-------------|----------|
+| **ext4** | Journaling filesystem | General storage |
+| **SquashFS** | Compressed, read-only | Embedded systems |
+| **UBIFS** | Flash filesystem | NAND/NOR flash |
+| **initramfs** | RAM-based, early root | Boot-time drivers |
+| **NFS** | Network filesystem | Development/debug |
+
+
 
 ### Additional Important Notes
 - **Boot Time Optimization:**
