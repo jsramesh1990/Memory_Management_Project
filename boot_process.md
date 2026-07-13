@@ -34,21 +34,152 @@ BIOS / UEFI Initialization
 - Passes kernel parameters (root filesystem location, options) and may load Device Tree on non-x86 architectures.
 - Transfers control to the kernel.
 
+#### 2️⃣ Bootloader (e.g., GRUB / LILO / Syslinux)
+
+| Aspect | Details |
+|--------|---------|
+| **Location in Storage** | • **GRUB:** /boot/grub/ or /boot/efi/EFI/<distro>/<br>• **MBR:** First 512 bytes of boot disk (stage 1)<br>• **EFI:** EFI System Partition (ESP) - /boot/efi/ |
+| **Location in Memory** | • **Stage 1:** Loaded at 0x7C00 (MBR)<br>• **Stage 2:** Loaded into conventional memory (1MB range)<br>• **GRUB2:** Loaded at 0x8000 or higher |
+| **Starting Point** | • **MBR:** BIOS loads MBR at 0x7C00 and jumps to it<br>• **EFI:** UEFI loads bootx64.efi and executes it<br>• **Entry:** _start or start() function |
+| **Functions** | • Present boot menu for user selection<br>• Load Linux kernel image (vmlinuz) into memory<br>• Load initial RAM disk (initrd/initramfs)<br>• Pass kernel parameters (root filesystem location)<br>• Transfer control to kernel |
+| **Source Code Location** | • **GRUB:** https://www.gnu.org/software/grub/<br>• **Configuration:** /boot/grub/grub.cfg<br>• **EFI:** /boot/efi/EFI/ |
+| **Key Files** | • **grub.cfg:** Boot menu configuration<br>• **vmlinuz-*:** Kernel image<br>• **initrd.img-*:** Initial RAM disk<br>• **grubenv:** Environment variables |
+
+
 #### 3️⃣ Linux Kernel Initialization
 - Kernel decompresses/unpacks itself, initializes system memory, scheduler, device drivers, peripheral subsystems.
 - Mounts initrd or root filesystem as specified.
 - Kernel then executes the user-space init process.
+
+**Bootloader Memory Layout (x86):**
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Memory Map During Bootloader Execution                     │
+│                                                              │
+│  0x00000000 - 0x000003FF: IVT (Interrupt Vector Table)     │
+│  0x00000400 - 0x000004FF: BIOS Data Area                   │
+│  0x00000500 - 0x00007BFF: Conventional Memory (Free)       │
+│  0x00007C00 - 0x00007DFF: MBR/Loader (Stage 1)            │
+│  0x00007E00 - 0x0009FFFF: Bootloader Stage 2               │
+│  0x000A0000 - 0x000FFFFF: Video Memory / BIOS ROM          │
+│  0x00100000 - 0xXXXXXXXX: Kernel Load Area (1MB+)          │
+│                                                              │
+│  Kernel loaded at: 0x100000 (1MB) or higher                 │
+│  Initrd loaded at: 0x4000000 (64MB) or higher              │
+└──────────────────────────────────────────────────────────────┘
+```
+#### 3️⃣ Linux Kernel Initialization
+
+| Aspect | Details |
+|--------|---------|
+| **Location in Storage** | • **x86:** /boot/vmlinuz-* or /boot/vmlinux-*<br>• **EFI:** /boot/efi/EFI/<distro>/vmlinuz-linux |
+| **Location in Memory** | • **Real Mode:** 0x10000 (64KB) - boot sector<br>• **Protected Mode:** 0x100000 (1MB) - kernel decompression<br>• **Final:** 0x1000000 (16MB) or higher - running kernel |
+| **Starting Point** | • **Entry:** _start or start_kernel()<br>• **Assembly Entry:** arch/x86/boot/header.S<br>• **C Entry:** init/main.c:start_kernel()<br>• **CPU State:** Protected mode, paging enabled |
+| **Functions** | • Decompress itself (from compressed vmlinuz)<br>• Initialize system memory management (paging, zones)<br>• Initialize scheduler, IRQ, timers<br>• Probe and initialize device drivers<br>• Mount root filesystem or initramfs<br>• Execute /sbin/init (PID 1) |
+| **Source Code Location** | • **Kernel:** https://www.kernel.org/<br>• **Arch-specific:** arch/x86/<br>• **Core kernel:** init/, kernel/, mm/ |
+| **Key Files** | • **head.S:** Assembly entry point<br>• **main.c:** start_kernel() function<br>• **setup.c:** Architecture-specific setup<br>• **Kconfig:** Kernel configuration |
+
+**Kernel Boot Flow:**
+```c
+// arch/x86/boot/header.S
+_start → startup_32() → startup_64() → start_kernel()
+
+// init/main.c
+start_kernel() {
+    setup_arch()        // Architecture-specific init
+    mm_init()           // Memory management init
+    sched_init()        // Scheduler init
+    init_IRQ()          // Interrupt controller init
+    time_init()         // Timer init
+    console_init()      // Console init
+    rest_init()         // Start kernel threads
+}
+```
+**Kernel Memory Layout (x86_64):**
+```
+┌──────────────────────────────────────────────────────────────┐
+│  x86_64 Kernel Memory Layout                                 │
+│                                                              │
+│  0x0000000000000000 - 0x00007FFFFFFFFFFF: User Space       │
+│  0x0000800000000000 - 0x0000FFFFFFFFFFFF: Kernel Space     │
+│                                                              │
+│  Kernel Text:   0xFFFFFFFF80000000 - 0xFFFFFFFF81000000    │
+│  Kernel Data:   0xFFFFFFFF81000000 - 0xFFFFFFFF82000000    │
+│  Kernel BSS:    0xFFFFFFFF82000000 - 0xFFFFFFFF83000000    │
+│  Module Space:  0xFFFFFFFF83000000 - 0xFFFFFFFF88000000    │
+│  vmalloc:       0xFFFF880000000000 - 0xFFFFC7FFFFFFFFFF    │
+│  Direct Map:    0xFFFF880000000000 - 0xFFFFC7FFFFFFFFFF    │
+└──────────────────────────────────────────────────────────────┘
+```
 
 #### 4️⃣ Init / systemd & User Space Startup
 - The init system (/sbin/init -> systemd or SysV) starts up system services (networking, login managers, GUIs).
 - GUI (Xorg, Wayland, desktop environment) may load depending on system type.
 - User applications launch and system becomes ready for interaction.
 
+#### 4️⃣ Init / systemd & User Space Startup
+
+| Aspect | Details |
+|--------|---------|
+| **Location in Storage** | • **systemd:** /lib/systemd/systemd<br>• **SysV init:** /sbin/init (symlink to /etc/init)<br>• **Configuration:** /etc/inittab (SysV), /etc/systemd/ (systemd) |
+| **Location in Memory** | • **PID 1:** First user-space process<br>• **Memory:** Loaded from root filesystem into RAM<br>• **Stack:** User-space stack allocated |
+| **Starting Point** | • **Entry:** main() function of init binary<br>• **Start Time:** Kernel executes /sbin/init after mounting rootfs<br>• **PID:** Process ID 1 |
+| **Functions** | • Mount additional filesystems (/proc, /sys, /dev)<br>• Start system services and daemons<br>• Manage runlevels/targets<br>• Handle system shutdown/reboot<br>• Launch user sessions and applications |
+| **Source Code Location** | • **systemd:** https://github.com/systemd/systemd<br>• **SysV init:** https://savannah.nongnu.org/projects/sysvinit<br>• **BusyBox:** https://busybox.net/ |
+| **Key Files** | • **/etc/inittab:** SysV init configuration<br>• **/etc/systemd/system/:** systemd unit files<br>• **/lib/systemd/system/:** System unit files<br>• **/etc/rc.d/:** SysV runlevel scripts |
+
+**Init Flow:**
+```
+┌──────────────────────────────────────────────────────────────┐
+│ Init System Flow                                             │
+│                                                              │
+│ Kernel → /sbin/init (PID 1)                                 │
+│              │                                               │
+│              ▼                                               │
+│  ┌─────────────────────────────────────────────────┐        │
+│  │ systemd Boot Sequence                           │        │
+│  │                                                 │        │
+│  │ 1. Mount /proc, /sys, /dev, /run               │        │
+│  │ 2. Load kernel modules                          │        │
+│  │ 3. Start udev (device management)              │        │
+│  │ 4. Mount filesystems from /etc/fstab           │        │
+│  │ 5. Start network services                       │        │
+│  │ 6. Start system services (sshd, cron, etc.)    │        │
+│  │ 7. Start getty (login prompts)                 │        │
+│  │ 8. Start graphical session (if enabled)        │        │
+│  └─────────────────────────────────────────────────┘        │
+│              │                                               │
+│              ▼                                               │
+│  ┌─────────────────────────────────────────────────┐        │
+│  │ System Ready                                    │        │
+│  │ • Login prompt or GUI                           │        │
+│  │ • User applications can start                   │        │
+│  └─────────────────────────────────────────────────┘        │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**systemd Unit Locations:**
+| Location | Purpose |
+|----------|---------|
+| `/etc/systemd/system/` | Local system configuration |
+| `/lib/systemd/system/` | System-provided units |
+| `/etc/systemd/user/` | User-specific services |
+| `/usr/lib/systemd/system/` | Vendor-provided units |
+
+
+
 ### Additional Important Notes
 - On embedded variants of Linux, you might skip BIOS/UEFI and use U-Boot or other bootloader directly.
 - Init systems are evolving: systemd is now dominant on many distributions.
 - Root filesystem may reside locally (SSD, HDD) or be network-mounted (NFS) depending on target deployment.
 - For secure boot or measured boot on PC/servers, UEFI Secure Boot adds steps of signature verification (not covered in embedded i.MX case).
+
+### 1.5 Additional Important Notes
+- On embedded variants of Linux, you might skip BIOS/UEFI and use U-Boot or other bootloader directly.
+- Init systems are evolving: systemd is now dominant on many distributions.
+- Root filesystem may reside locally (SSD, HDD) or be network-mounted (NFS) depending on target deployment.
+- For secure boot or measured boot on PC/servers, UEFI Secure Boot adds steps of signature verification (not covered in embedded i.MX case).
+
 
 ---
 [Back to TOC](#table-of-boot-process)
