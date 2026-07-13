@@ -6,7 +6,7 @@
 3. [ARM Boot Process (General ARM-based Embedded)](#3-arm-boot-process-general-arm-based-embedded-devices)
 4. [Android Boot Process](#4-android-boot-process-based-on-linux-kernel-mobileembedded-devices)
 5. [Qualcomm Boot Process](#5-qualcomm-boot-process-a-comprehensive-guide)
-6. [Falcon Mode](#6-falcon-mode-u-boot-spl-fast-boot-eature)
+6. [Falcon Mode](#6-falcon-mode-u-boot-spl-fast-boot-feature)
 
 ---
 
