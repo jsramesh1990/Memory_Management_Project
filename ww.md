@@ -2148,11 +2148,6 @@ SOM Architecture:
 [🔝 Back to Table of Contents](#table-of-contents)
 
 ## System Calls
-Here are the **10 main points** about System Calls explained in simple words:
-
----
-
-## System Calls - 10 Key Points
 
 ### 1. What is a System Call?
 
@@ -2421,12 +2416,9 @@ exit_group(0) = ?                                 ← System call
 ```
 
 [🔝 Back to Table of Contents](#table-of-contents)
----
-Here are **15 key points** about Process/Thread Management in words with difference tables:
 
----
 
-## Process/Thread Management - 15 Key Points
+## Process/Thread Management 
 
 ---
 
@@ -2739,11 +2731,7 @@ Threads share memory, so they must coordinate to avoid conflicts.
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-Here are **10 main points** about Scheduler for interviews:
-
----
-
-## Scheduler - 10 Key Points for Interview
+## Scheduler
 
 ---
 
@@ -2895,7 +2883,7 @@ Here are **10 key points** about Signals for interviews:
 
 ---
 
-## Signals - 10 Key Points for Interview
+## Signals
 
 ---
 
