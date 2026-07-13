@@ -210,6 +210,7 @@ start_kernel() {
 │  • NAND Flash                                              │
 │  • USB (Serial Download Protocol)                          │
 └──────────────────────────────────────────────────────────────┘
+```
 
 #### 2️⃣ Secondary Bootloader (SPL → full U-Boot) / U-Boot
 - **If SPL is used:**
