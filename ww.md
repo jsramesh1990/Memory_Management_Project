@@ -3624,7 +3624,7 @@ Here are the **10 key points** about IPC (Inter-Process Communication) for inter
 
 ---
 
-## IPC - 10 Key Points for Interview
+## IPC
 
 ---
 
@@ -4146,7 +4146,7 @@ Here are **15 important questions and answers** about Linux Device Drivers for i
 
 ---
 
-## Linux Device Drivers - 15 Interview Questions & Answers
+## Linux Device Drivers
 
 ---
 
@@ -4767,7 +4767,7 @@ Here are **15 important questions and answers** about Interrupts for interviews:
 
 ---
 
-## Interrupts - 15 Interview Questions & Answers
+## Interrupts
 
 ---
 
@@ -5372,11 +5372,8 @@ Bottom Half Hierarchy:
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-Here are **15 important questions and answers** about ISR (Interrupt Service Routine) for interviews:
-
 ---
-
-## ISR - 15 Interview Questions & Answers
+## ISR
 
 ---
 
@@ -6048,26 +6045,6 @@ static void work_handler(struct work_struct *work) {
 
 ---
 
-## Quick Reference - Key ISR Concepts
-
-| Concept | Summary |
-|---------|---------|
-| **ISR** | Function handling interrupt events |
-| **Top Half** | Immediate ISR (fast, atomic) |
-| **Bottom Half** | Deferred processing (tasklet, workqueue) |
-| **IRQ_HANDLED** | Interrupt was ours |
-| **IRQ_NONE** | Interrupt not ours |
-| **Atomic Context** | Cannot sleep |
-| **Process Context** | Can sleep |
-| **Spinlock** | Lock for interrupt context |
-| **Mutex** | Lock for process context |
-| **Threaded ISR** | Can sleep and do heavy work |
-| **Shared IRQ** | Multiple devices on same IRQ |
-| **Interrupt Latency** | Time from interrupt to ISR start |
-| **printk** | Debugging logs |
-| **/proc/interrupts** | Interrupt statistics |
-
----
 
 [Back to Section 4](#4-embedded-systems--linux)
 
