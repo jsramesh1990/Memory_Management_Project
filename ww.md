@@ -1,24 +1,24 @@
 ## 4. Embedded Systems & Linux
 
-[Microcontroller vs Microprocessor](#microcontroller-vs-microprocessor), 
-[Harvard vs Von Neumann](#harvard-vs-von-neumann), 
-[Boot Process](#boot-process), 
-[SOC vs SOM-1](#soc-vs-som-1), 
-[Linux Architecture](#linux-architecture), 
-[System Calls](#system-calls), 
-[Process-Thread Management](#process-thread-management), 
-[Scheduler](#scheduler), 
-[Signals](#signals), 
-[File Systems](#file-systems), 
-[IPC](#ipc), 
-[Linux Device Drivers](#linux-device-drivers), 
-[Interrupts](#interrupts), 
-[ISR](#isr), 
-[Concurrency](#concurrency)
+4.1 [Microcontroller vs Microprocessor](#microcontroller-vs-microprocessor)
+4.2 [Harvard vs Von Neumann](#harvard-vs-von-neumann)
+4.3 [Boot Process](#boot-process)
+4.4 [SOC vs SOM-1](#soc-vs-som-1)
+4.5 [Linux Architecture](#linux-architecture)
+4.6 [System Calls](#system-calls)
+4.7 [Process-Thread Management](#process-thread-management)
+4.8 [Scheduler](#scheduler)
+4.9 [Signals](#signals)
+4.10 [File Systems](#file-systems)
+4.11 [IPC](#ipc)
+4.12 [Linux Device Drivers](#linux-device-drivers)
+4.13 [Interrupts](#interrupts)
+4.14 [ISR](#isr)
+4.15 [Concurrency](#concurrency)
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-## Microcontroller vs Microprocessor
+#### 4.1 Microcontroller vs Microprocessor
 
 ### What is a Microcontroller (MCU)?
 
@@ -138,8 +138,8 @@ Microprocessor Architecture:
 [🔝 Back to Table of Contents](#table-of-contents)
 
 ---
+#### 4.2 Harvard vs Von Neumann
 
-## Harvard vs Von Neumann
 #### What is Von Neumann Architecture?
 
 The Von Neumann architecture, named after mathematician and physicist John von Neumann, is a computer architecture where program instructions and data are stored in the same memory space and share a single bus for both instruction and data transfer.
@@ -301,7 +301,7 @@ Performance Comparison:
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-# Boot Process:
+#### 4.3 Boot Process
 
 # Table of Boot Process
 1. [Linux Boot Process (x86/General Purpose)](#1-linux-boot-process-x86general-purpose)
@@ -1968,7 +1968,7 @@ This makes Falcon Mode a natural optimization for systems where the boot flow is
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-## SOC vs SOM-1
+#### 4.4 SOC vs SOM-1
 
 ### What is SOC (System on Chip)?
 
@@ -2144,7 +2144,7 @@ SOM Architecture:
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-## System Calls
+#### 4.6 System Calls
 
 ### 1. What is a System Call?
 
@@ -2414,10 +2414,7 @@ exit_group(0) = ?                                 ← System call
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
----
-## Process-Thread Management 
-
----
+#### 4.7 Process-Thread Management
 
 ### 1. What is a Process?
 
@@ -2728,7 +2725,7 @@ Threads share memory, so they must coordinate to avoid conflicts.
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-## Scheduler
+#### 4.8 Scheduler
 
 ---
 
@@ -2876,12 +2873,9 @@ CFS is the **default scheduler in Linux** since kernel 2.6.23.
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-Here are **10 key points** about Signals for interviews:
-
 ---
 
-## Signals
-
+#### 4.9 Signals
 ---
 
 ### 1. What are Signals?
@@ -3233,7 +3227,7 @@ Here are the **10 key points** about File Systems for interviews:
 
 ---
 
-## File Systems
+#### 4.10 File Systems
 
 ---
 
@@ -3620,11 +3614,7 @@ tune2fs -l /dev/sda1
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-Here are the **10 key points** about IPC (Inter-Process Communication) for interviews:
-
----
-
-## IPC
+#### 4.11 IPC
 
 ---
 
@@ -4146,7 +4136,7 @@ Here are **15 important questions and answers** about Linux Device Drivers for i
 
 ---
 
-## Linux Device Drivers
+#### 4.12 Linux Device Drivers
 
 ---
 
@@ -4766,8 +4756,7 @@ static struct usb_driver my_usb_driver = {
 Here are **15 important questions and answers** about Interrupts for interviews:
 
 ---
-
-## Interrupts
+#### 4.13 Interrupts
 
 ---
 
@@ -5373,7 +5362,7 @@ Bottom Half Hierarchy:
 [🔝 Back to Table of Contents](#table-of-contents)
 
 ---
-## ISR
+#### 4.14 ISR
 
 ---
 
