@@ -6536,47 +6536,9 @@ static int __init init_module(void) {    // Module initialization function - cal
     return ret;    // Return 0 on success, negative error code on failure
 }
 ```
+This code demonstrates threaded interrupt handlers in Linux, which allow complex processing (including sleeping operations like mutex_lock and kmalloc) to run in a separate kernel thread context instead of blocking the atomic interrupt context. The request_threaded_irq registers a lightweight primary handler (NULL uses default) and a secondary threaded handler that executes as a kernel thread, enabling safe use of sleeping functions. This improves system responsiveness by moving non-urgent interrupt processing out of the hard IRQ context while maintaining the ability to handle hardware events.
 
-
-
-#include <linux/interrupt.h>
-#include <linux/module.h>
-
-// Threaded handler (can sleep)
-static irqreturn_t threaded_handler(int irq, void *dev_id) {
-    struct my_device *dev = dev_id;
-    
-    // Allowed to sleep
-    mutex_lock(&dev->mutex);
-    
-    // Allocate memory
-    char *data = kmalloc(1024, GFP_KERNEL);
-    if (data) {
-        // Complex processing
-        process_data(data, dev);
-        kfree(data);
-    }
-    
-    mutex_unlock(&dev->mutex);
-    return IRQ_HANDLED;
-}
-
-static int __init init_module(void) {
-    int ret;
-    
-    // Register threaded ISR
-    ret = request_threaded_irq(IRQ_NUMBER,
-                              NULL,              // Primary handler
-                              threaded_handler,   // Threaded handler
-                              IRQF_SHARED,
-                              "my_device",
-                              dev_data);
-    
-    return ret;
-}
 ```
-
----
 
 ### Q13: What is the difference between ISR and Software Interrupt?
 
