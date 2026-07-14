@@ -1964,7 +1964,7 @@ On i.MX processors, Falcon Mode is particularly attractive because the ROM alrea
 This makes Falcon Mode a natural optimization for systems where the boot flow is fixed and fast startup is more important than interactive bootloader functionality.
 
 ---
-[Back to TOC](#table-of-boot-process)
+[📑 Table of Boot Process](#table-of-boot-process)
 
 [Back to Section 4](#4-embedded-systems--linux)
 
