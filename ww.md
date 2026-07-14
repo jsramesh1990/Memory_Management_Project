@@ -3223,8 +3223,6 @@ void child_handler(int sig) {
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-Here are the **10 key points** about File Systems for interviews:
-
 ---
 
 #### 4.10 File Systems
@@ -4132,8 +4130,6 @@ int main() {
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-Here are **15 important questions and answers** about Linux Device Drivers for interviews:
-
 ---
 
 #### 4.12 Linux Device Drivers
@@ -4752,8 +4748,6 @@ static struct usb_driver my_usb_driver = {
 [Back to Section 4](#4-embedded-systems--linux)
 
 [🔝 Back to Table of Contents](#table-of-contents)
-
-Here are **15 important questions and answers** about Interrupts for interviews:
 
 ---
 #### 4.13 Interrupts
