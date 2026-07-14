@@ -303,13 +303,20 @@ Performance Comparison:
 
 #### 4.3 Boot Process
 
-# Table of Boot Process
+##### Table of Boot Process
+
 4.3.1. [Linux Boot Process (x86/General Purpose)](#431-linux-boot-process-x86general-purpose)
+
 4.3.2. [i.MX Boot Process (NXP i.MX SoCs)](#432-imx-boot-process-nxp-imx-socs)
+
 4.3.3. [ARM Boot Process (General ARM-based Embedded Devices)](#433-arm-boot-process-general-arm-based-embedded-devices)
-4.3.4. [Android Boot Process](#434-android-boot-process-based-on-linux-kernel-mobileembedded-devices)
-4.3.5. [Qualcomm Boot Process](#435-qualcomm-boot-process-a-comprehensive-guide)
+
+4.3.4. [Android Boot Process](#434-android-boot-process)
+
+4.3.5. [Qualcomm Boot Process: A Comprehensive Guide](#435-qualcomm-boot-process-a-comprehensive-guide)
+
 4.3.6. [Falcon Mode](#436-falcon-mode)
+
 ---
 
 #### 4.3.1 Linux Boot Process (x86/General Purpose)
