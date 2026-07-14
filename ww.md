@@ -5377,20 +5377,6 @@ static struct usb_driver my_usb_driver = {
 | **ioctl/sysfs** | Device control/configuration |
 
 
-```markdown
-# Complete Guide: Device Drivers and Modules in Yocto and Android BSP
-
-## Table of Contents
-- [Understanding the Basics](#understanding-the-basics)
-- [Yocto BSP: Device Driver Integration](#yocto-bsp-device-driver-integration)
-- [Yocto BSP: Kernel Module Integration](#yocto-bsp-kernel-module-integration)
-- [Android BSP: Device Driver Integration](#android-bsp-device-driver-integration)
-- [Android BSP: Kernel Module Integration](#android-bsp-kernel-module-integration)
-- [Comparison Summary](#comparison-summary)
-- [Troubleshooting Guide](#troubleshooting-guide)
-
----
-
 ## Understanding the Basics
 
 ### Device Driver vs Kernel Module
@@ -6055,9 +6041,6 @@ adb shell dmesg | grep "avc: denied"
 5. **Document interfaces** - Keep documentation updated
 
 ---
-
-*This comprehensive guide covers all aspects of device driver and kernel module integration for both Yocto and Android BSPs. The specific commands and file paths may vary based on your exact version and target platform.*
-```
 
 ---
 
