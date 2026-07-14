@@ -2712,7 +2712,7 @@ Linux architecture follows a layered approach where **applications run in user s
 
 ## 4.6 System Calls
 
-### 1. What is a System Call?
+#### 1. What is a System Call?
 
 A **system call** is a request from a user program to the operating system kernel for a service. It's like asking a librarian (kernel) to get a book (resource) from a restricted area (kernel space) because you (application) can't access it directly.
 
@@ -2982,7 +2982,7 @@ exit_group(0) = ?                                 ← System call
 
 ## 4.7 Process-Thread Management
 
-### 1. What is a Process?
+#### 1. What is a Process?
 
 A **process** is a program in execution. It's not just the code; it includes the program's current activity, the data it's working with, the memory it's using, and all the resources it has been allocated. Think of a process as a running instance of a program with its own memory space and system resources.
 
@@ -3291,11 +3291,11 @@ Threads share memory, so they must coordinate to avoid conflicts.
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-#### 4.8 Scheduler
+## 4.8 Scheduler
 
 ---
 
-### 1. What is a Scheduler?
+#### 1. What is a Scheduler?
 
 A **scheduler** is the kernel component that decides which process or thread gets CPU time and for how long. It manages the execution of multiple processes, ensuring efficient CPU utilization and fair allocation of processing time.
 
@@ -3441,10 +3441,10 @@ CFS is the **default scheduler in Linux** since kernel 2.6.23.
 
 ---
 
-#### 4.9 Signals
+## 4.9 Signals
 ---
 
-### 1. What are Signals?
+#### 1. What are Signals?
 
 **Signals** are software interrupts that provide a mechanism for handling asynchronous events in Unix/Linux systems. They are notifications sent to a process to inform it that an event has occurred, like a user pressing Ctrl+C or a segmentation fault.
 
@@ -3791,11 +3791,11 @@ void child_handler(int sig) {
 
 ---
 
-#### 4.10 File Systems
+## 4.10 File Systems
 
 ---
 
-### 1. What is a File System?
+#### 1. What is a File System?
 
 A **file system** is the method and data structure that an operating system uses to store, organize, and manage files on storage devices like hard drives, SSDs, and flash memory. It controls how data is stored, retrieved, and managed.
 
@@ -4178,11 +4178,11 @@ tune2fs -l /dev/sda1
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-#### 4.11 IPC
+## 4.11 IPC
 
 ---
 
-### 1. What is IPC?
+#### 1. What is IPC?
 
 **IPC (Inter-Process Communication)** is a mechanism that allows processes to communicate with each other, exchange data, and synchronize their actions. Since processes have separate memory spaces, they need special mechanisms to share information.
 
@@ -4698,11 +4698,11 @@ int main() {
 
 ---
 
-#### 4.12 Linux Device Drivers
+## 4.12 Linux Device Drivers
 
 ---
 
-### Q1: What is a Linux Device Driver?
+#### Q1: What is a Linux Device Driver?
 
 **Answer:** A Linux device driver is a kernel module that controls and communicates with hardware devices. It provides a software interface between the hardware and the operating system, allowing user-space applications to interact with devices through standard system calls.
 
@@ -5316,11 +5316,11 @@ static struct usb_driver my_usb_driver = {
 [🔝 Back to Table of Contents](#table-of-contents)
 
 ---
-#### 4.13 Interrupts
+## 4.13 Interrupts
 
 ---
 
-### Q1: What is an Interrupt?
+#### Q1: What is an Interrupt?
 
 **Answer:** An **interrupt** is a hardware or software signal that temporarily stops normal CPU execution and forces the processor to execute a special function called an Interrupt Service Routine (ISR). It allows the CPU to respond to asynchronous events without wasting cycles on polling.
 
@@ -5922,11 +5922,11 @@ Bottom Half Hierarchy:
 [🔝 Back to Table of Contents](#table-of-contents)
 
 ---
-#### 4.14 ISR
+## 4.14 ISR
 
 ---
 
-### Q1: What is an ISR (Interrupt Service Routine)?
+#### Q1: What is an ISR (Interrupt Service Routine)?
 
 **Answer:** An **ISR (Interrupt Service Routine)** is a special function that executes automatically in response to an interrupt signal. It handles the interrupt by processing the event, communicating with hardware, and performing necessary actions before returning control to the interrupted code.
 
@@ -6594,7 +6594,740 @@ static void work_handler(struct work_struct *work) {
 
 ---
 
+[Back to Section 4](#4-embedded-systems--linux)
+
+[🔝 Back to Table of Contents](#table-of-contents)
+
+## 4.15 Concurrency
+
+#### Introduction
+
+Concurrency in embedded systems is the execution of multiple tasks that appear to happen simultaneously. Unlike general-purpose computing, embedded concurrency is typically managed through hardware interrupts, Real-Time Operating Systems (RTOS), or asynchronous programming models. It is vital for systems like pacemakers or automotive braking to process critical inputs instantly and reliably.
+
+### Why Concurrency Matters in Embedded Systems
+
+Embedded systems often need to:
+- **Respond to external events** in real-time (e.g., sensor readings, button presses)
+- **Handle multiple peripherals** simultaneously (e.g., UART, I2C, SPI, GPIO)
+- **Meet strict timing deadlines** (e.g., motor control, audio processing)
+- **Manage power consumption** efficiently by sleeping when idle
+
+---
+
+## Concurrency Approaches Flow Diagram
+
+```text
+                    ┌─────────────────────────────────────┐
+                    │   Event Occurs / Task Needs Run     │
+                    └──────────────┬──────────────────────┘
+                                   │
+                                   ▼
+                    ┌─────────────────────────────────────┐
+                    │   What level of concurrency needed? │
+                    └──────────────┬──────────────────────┘
+                                   │
+            ┌──────────────────────┼──────────────────────┐
+            │                      │                      │
+            ▼                      ▼                      ▼
+┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐
+│  Simple Response  │  │  Complex System   │  │  Async I/O Heavy  │
+│  (Hardware Int)   │  │  (RTOS Threads)   │  │  (Event-Driven)   │
+└─────────┬─────────┘  └─────────┬─────────┘  └─────────┬─────────┘
+          │                      │                      │
+          ▼                      ▼                      ▼
+┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐
+│  ISR Execution    │  │  Scheduler Runs   │  │  Async Runtime    │
+│  (Minimal, Fast)  │  │  Highest Priority │  │  Yields on Await  │
+└─────────┬─────────┘  └─────────┬─────────┘  └─────────┬─────────┘
+          │                      │                      │
+          ▼                      ▼                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Synchronization Required?                     │
+│            (Mutexes, Semaphores, Critical Sections)              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 1. Hardware Interrupts (Bare-Metal)
+
+The most fundamental form of concurrency. Instead of the CPU continuously polling a sensor (wasting cycles and power), specialized hardware peripherals trigger an interrupt when an event occurs.
+
+### Mechanism
+
+```text
+    Hardware Event (Button Press, Timer, UART Data)
+                    │
+                    ▼
+    Interrupt Controller (NVIC on ARM)
+                    │
+                    ▼
+    CPU Pauses Current Task
+                    │
+                    ▼
+    Save Context to Stack (Registers, PC, PSR)
+                    │
+                    ▼
+    Execute ISR (Interrupt Service Routine)
+                    │
+                    ▼
+    Restore Context
+                    │
+                    ▼
+    Resume Interrupted Task
+```
+
+### When to Use Hardware Interrupts
+
+| Use Case | Example |
+|----------|---------|
+| **High-priority events** | Emergency stop button, motor fault detection |
+| **Time-critical responses** | PWM duty cycle adjustment, ADC conversion complete |
+| **Low-latency requirements** | Data reception from UART at high baud rates |
+| **Power-saving scenarios** | Wake from sleep on external event |
+
+### Function Example (STM32 with HAL)
+
+```c
+// GPIO Interrupt handler for button press
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    if (GPIO_Pin == BUTTON_PIN) {
+        // Quick, non-blocking ISR
+        // Set a flag, increment a counter, or wake a task
+        button_pressed_flag = 1;
+    }
+}
+
+// Main loop checks the flag
+int main(void) {
+    while(1) {
+        if (button_pressed_flag) {
+            button_pressed_flag = 0;
+            process_button_press();  // Long processing in main context
+        }
+        // Do other work
+    }
+}
+```
+
+### Important ISR Rules
+
+```text
+┌─────────────────────────────────────────────────────┐
+│                ISR Best Practices                   │
+├─────────────────────────────────────────────────────┤
+│ ✅ Keep ISRs short and fast                         │
+│ ✅ Avoid blocking calls (delay, semaphore take)     │
+│ ✅ Use flags or queues to defer processing          │
+│ ✅ Save/Restore context (handled by hardware)      │
+│ ❌ Avoid printf, malloc, or heavy computations      │
+│ ❌ Don't call RTOS blocking functions               │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Super-Loop with State Machines
+
+A sequential approach where everything runs in a single loop. It manages concurrency not through multiple threads, but by breaking tasks down into non-blocking states.
+
+### Mechanism
+
+```text
+    ┌──────────────────────────────────────────────┐
+    │               Super Loop                     │
+    │                                              │
+    │  ┌────────────────────────────────────┐     │
+    │  │  State Machine 1 (Task A)         │     │
+    │  │  - State: IDLE → READ → PROCESS   │     │
+    │  └────────────────────────────────────┘     │
+    │                   │                          │
+    │  ┌────────────────────────────────────┐     │
+    │  │  State Machine 2 (Task B)         │     │
+    │  │  - State: WAIT → SEND → DONE      │     │
+    │  └────────────────────────────────────┘     │
+    │                   │                          │
+    │  ┌────────────────────────────────────┐     │
+    │  │  State Machine 3 (Task C)         │     │
+    │  │  - State: IDLE → ERROR → RETRY    │     │
+    │  └────────────────────────────────────┘     │
+    │                                              │
+    │  ↓ (Loop repeats)                           │
+    └──────────────────────────────────────────────┘
+```
+
+### State Machine Implementation
+
+```c
+// State definitions
+typedef enum {
+    STATE_IDLE,
+    STATE_READ_SENSOR,
+    STATE_PROCESS_DATA,
+    STATE_SEND_RESULT
+} sensor_state_t;
+
+sensor_state_t state = STATE_IDLE;
+
+void sensor_task(void) {
+    static uint32_t timer = 0;
+    static int sensor_data = 0;
+    
+    switch(state) {
+        case STATE_IDLE:
+            if (timer++ > 1000) {  // 1 second elapsed
+                timer = 0;
+                state = STATE_READ_SENSOR;
+            }
+            break;
+            
+        case STATE_READ_SENSOR:
+            if (sensor_ready()) {
+                sensor_data = read_sensor();
+                state = STATE_PROCESS_DATA;
+            }
+            break;
+            
+        case STATE_PROCESS_DATA:
+            sensor_data = filter_data(sensor_data);
+            state = STATE_SEND_RESULT;
+            break;
+            
+        case STATE_SEND_RESULT:
+            if (uart_tx_ready()) {
+                uart_send(sensor_data);
+                state = STATE_IDLE;
+            }
+            break;
+    }
+}
+
+void main_loop(void) {
+    while(1) {
+        sensor_task();
+        led_task();      // Non-blocking
+        comm_task();     // Non-blocking
+        // Each task runs quickly and returns
+    }
+}
+```
+
+### When to Use Super-Loop with State Machines
+
+| Use Case | Example |
+|----------|---------|
+| **Simple applications** | Temperature logger, basic LED controller |
+| **Limited resources** | 8-bit microcontrollers with tiny RAM/ROM |
+| **Predictable timing** | Systems with deterministic execution paths |
+| **No complex dependencies** | Single sensor reading, simple actuation |
+
+---
+
+## 3. Real-Time Operating System (RTOS)
+
+For complex systems, an RTOS (such as FreeRTOS, Zephyr, or ThreadX) provides preemptive multitasking, splitting the software into discrete threads with assigned priorities.
+
+### RTOS Architecture
+
+```text
+┌─────────────────────────────────────────────────────┐
+│                     Application                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────┐ │
+│  │ Thread 1     │  │ Thread 2     │  │ Thread 3 │ │
+│  │ Priority: 3  │  │ Priority: 1  │  │ Priority:2│ │
+│  └──────┬───────┘  └──────┬───────┘  └─────┬────┘ │
+│         │                 │                 │      │
+│         └─────────────────┼─────────────────┘      │
+│                           │                         │
+│              ┌────────────▼─────────────┐          │
+│              │     RTOS Scheduler       │          │
+│              │  - Preemptive            │          │
+│              │  - Priority-based        │          │
+│              │  - Time-slicing          │          │
+│              └────────────┬─────────────┘          │
+│                           │                         │
+│              ┌────────────▼─────────────┐          │
+│              │     Kernel Services      │          │
+│              │  - Mutexes               │          │
+│              │  - Semaphores            │          │
+│              │  - Queues                │          │
+│              │  - Task Notifications    │          │
+│              └────────────┬─────────────┘          │
+└───────────────────────────┼─────────────────────────┘
+                            │
+              ┌────────────▼─────────────┐
+              │    Hardware (HAL/Drivers) │
+              └───────────────────────────┘
+```
+
+### RTOS Thread Example (FreeRTOS)
+
+```c
+// Sensor reading thread - High priority
+void vSensorTask(void *pvParameters) {
+    int sensor_value;
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    
+    for(;;) {
+        sensor_value = read_sensor();
+        xQueueSend(sensor_queue, &sensor_value, 0);
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100));
+    }
+}
+
+// Processing thread - Medium priority
+void vProcessingTask(void *pvParameters) {
+    int sensor_value;
+    int processed_value;
+    
+    for(;;) {
+        if (xQueueReceive(sensor_queue, &sensor_value, portMAX_DELAY)) {
+            processed_value = process_data(sensor_value);
+            xQueueSend(display_queue, &processed_value, 0);
+        }
+    }
+}
+
+// Display thread - Low priority
+void vDisplayTask(void *pvParameters) {
+    int display_value;
+    
+    for(;;) {
+        if (xQueueReceive(display_queue, &display_value, portMAX_DELAY)) {
+            update_display(display_value);
+        }
+    }
+}
+
+void main(void) {
+    // Create queues
+    xQueueCreate(10, sizeof(int));  // sensor_queue
+    xQueueCreate(10, sizeof(int));  // display_queue
+    
+    // Create threads with different priorities
+    xTaskCreate(vSensorTask, "Sensor", 128, NULL, 3, NULL);
+    xTaskCreate(vProcessingTask, "Process", 256, NULL, 2, NULL);
+    xTaskCreate(vDisplayTask, "Display", 128, NULL, 1, NULL);
+    
+    vTaskStartScheduler();
+}
+```
+
+### When to Use RTOS
+
+| Use Case | Example |
+|----------|---------|
+| **Complex applications** | Medical devices, automotive ECUs |
+| **Multiple I/O peripherals** | Systems with UART, I2C, SPI, CAN simultaneously |
+| **Strict deadlines** | Motor control with 1ms control loop |
+| **Modular architecture** | IoT devices with networking, sensors, and display |
+| **Maintainability** | Large teams working on different subsystems |
+
+---
+
+## 4. Asynchronous / Event-Driven (e.g., Async Rust)
+
+Modern embedded architectures utilize asynchronous patterns to allow time-consuming tasks (like waiting for slow bus transmission) to yield execution, freeing the CPU to do other work without the overhead of full threads.
+
+### Async Flow Diagram
+
+```text
+┌─────────────────────────────────────────────────────┐
+│               Async Runtime                         │
+│  ┌────────────────────────────────────────────┐    │
+│  │  Task 1: I2C Read (awaiting response)    │    │
+│  │  ↓                                        │    │
+│  │  Task 1 → Yields to executor              │    │
+│  │  ↓                                        │    │
+│  │  Task 2: UART Send (awaiting completion) │    │
+│  │  ↓                                        │    │
+│  │  Task 2 → Yields to executor              │    │
+│  │  ↓                                        │    │
+│  │  Task 3: Sensor Poll (ready to run)      │    │
+│  │  ↓                                        │    │
+│  │  Task 3 executes, yields when waiting     │    │
+│  │  ↓                                        │    │
+│  │  Task 1: I2C response ready → resumes    │    │
+│  └────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────┘
+```
+
+### Async Rust Example (Embedded)
+
+```rust
+use embassy_executor::Spawner;
+use embassy_time::{Timer, Duration};
+use embassy_sync::channel::Channel;
+
+#[embassy_executor::main]
+async fn main(spawner: Spawner) {
+    let (sender, receiver) = Channel::new();
+    
+    spawner.spawn(sensor_task(sender)).unwrap();
+    spawner.spawn(display_task(receiver)).unwrap();
+}
+
+#[embassy_executor::task]
+async fn sensor_task(sender: ChannelSender<u32>) {
+    loop {
+        // Async sensor reading - yields while waiting
+        let value = read_sensor_async().await;
+        sender.send(value).await;  // Async send
+        Timer::after(Duration::from_millis(100)).await;
+    }
+}
+
+#[embassy_executor::task]
+async fn display_task(receiver: ChannelReceiver<u32>) {
+    loop {
+        let value = receiver.receive().await;
+        update_display_async(value).await;
+    }
+}
+```
+
+### When to Use Async/Event-Driven
+
+| Use Case | Example |
+|----------|---------|
+| **I/O-heavy applications** | Network stacks, BLE communication |
+| **Resource-constrained devices** | Smaller stack usage than threads |
+| **High concurrency needs** | Many concurrent connections or peripherals |
+| **Efficient power usage** | Sleeping when no tasks are ready |
+
+---
+
+## Critical Challenges & Synchronization
+
+Whenever multiple parts of a system share resources (global variables, RAM, or hardware buses), concurrency can introduce bugs if left unmanaged.
+
+### Common Concurrency Issues
+
+```text
+┌─────────────────────────────────────────────────────┐
+│              Concurrency Challenges                 │
+├─────────────────────────────────────────────────────┤
+│                                                   │
+│  RACE CONDITIONS                    DEADLOCKS    │
+│  ──────────────                    ──────────    │
+│  Thread A:                        Thread A:      │
+│  read data → 1                    Lock M1        │
+│  Thread B:                        Thread B:      │
+│  read data → 1 → write 2         Lock M2        │
+│  Thread A:                        Thread A:      │
+│  write 1 (lost update)           Wait M2        │
+│                                    Thread B:      │
+│                                    Wait M1        │
+│                                    ↓              │
+│                                    ❌ HANG       │
+└─────────────────────────────────────────────────────┘
+```
+
+### Synchronization Primitives
+
+#### Mutex (Mutual Exclusion)
+```c
+// FreeRTOS Mutex example
+SemaphoreHandle_t xMutex;
+
+void task1(void *pvParameters) {
+    for(;;) {
+        xSemaphoreTake(xMutex, portMAX_DELAY);
+        // Critical section
+        shared_data += 10;
+        xSemaphoreGive(xMutex);
+        vTaskDelay(10);
+    }
+}
+
+void task2(void *pvParameters) {
+    for(;;) {
+        xSemaphoreTake(xMutex, portMAX_DELAY);
+        // Critical section
+        shared_data -= 5;
+        xSemaphoreGive(xMutex);
+        vTaskDelay(10);
+    }
+}
+```
+
+#### Semaphore (Signaling)
+```c
+// Binary semaphore for event notification
+SemaphoreHandle_t xSemaphore;
+
+void ISR_Handler(void) {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(xSemaphore, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
+
+void task(void *pvParameters) {
+    for(;;) {
+        if (xSemaphoreTake(xSemaphore, portMAX_DELAY)) {
+            // Event occurred
+            process_event();
+        }
+    }
+}
+```
+
+#### Critical Sections (Disabling Interrupts)
+```c
+// ARM Cortex-M critical section
+void critical_section_enter(void) {
+    __disable_irq();  // Disable all interrupts
+}
+
+void critical_section_exit(void) {
+    __enable_irq();   // Enable all interrupts
+}
+
+// Usage
+critical_section_enter();
+shared_variable++;  // Safe operation
+critical_section_exit();
+```
+
+### Priority Inversion
+
+A dangerous scenario where a low-priority thread holds a mutex needed by a high-priority thread, preventing the high-priority thread from executing.
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│                    Priority Inversion                     │
+├────────────────────────────────────────────────────────────┤
+│  High Priority Task ████████░░░░░░░░░░░░░░░░░░░ WAITING │
+│  Medium Priority   ░░░░░░░░░░░███████████████████████    │
+│  Low Priority      ████████████████████░░░░░░░░░░░░░    │
+│                        ↑                    ↑            │
+│                        │                    │            │
+│                Holds Mutex            Low Priority       │
+│                                       Preempted by       │
+│                                       Medium Priority    │
+│                                                         │
+│  Solution: Priority Inheritance Protocol                │
+│  → Low priority task inherits high priority             │
+│     until mutex is released                             │
+└──────────────────────────────────────────────────────────┘
+```
+
+### Deadlock Example
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│                    Deadlock Scenario                       │
+├────────────────────────────────────────────────────────────┤
+│                                                          │
+│  Thread A                    Thread B                    │
+│  ─────────                   ─────────                   │
+│  1. Take Mutex X            1. Take Mutex Y              │
+│  2. (processing)            2. (processing)              │
+│  3. Try to take Mutex Y     3. Try to take Mutex X      │
+│     ↓                          ↓                         │
+│     ⏳ WAITING                 ⏳ WAITING                 │
+│     (Held by Thread B)         (Held by Thread A)       │
+│                                                          │
+│  Result: Both threads blocked indefinitely               │
+│                                                          │
+│  Prevention:                                             │
+│  • Always acquire mutexes in same order                  │
+│  • Use timeout on lock acquisition                       │
+│  • Avoid nested locks when possible                     │
+└──────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Decision Matrix: Choosing the Right Approach
+
+| Criteria | Interrupts | Super-Loop | RTOS | Async |
+|----------|------------|------------|------|-------|
+| **Complexity** | Low | Low | High | Medium |
+| **Response Time** | Microseconds | Millisecond+ | Microseconds | Microseconds |
+| **RAM Usage** | Minimal | Minimal | High | Medium |
+| **ROM Usage** | Minimal | Minimal | High | Medium |
+| **Predictability** | High (for ISRs) | Medium | High | Medium |
+| **Maintainability** | Low (spaghetti) | Low (spaghetti) | High | High |
+| **Multi-task Support** | Limited (ISR + loop) | Limited | Extensive | Good |
+| **Time to Market** | Fast | Fast | Medium | Medium |
+| **Power Efficiency** | High | Medium | High (with idle) | Highest |
+
+---
+
+## Concurrency Safety Checklist
+
+```text
+✓ Identify all shared resources (global variables, peripherals)
+✓ Determine access patterns (read-only, write-only, read-write)
+✓ Choose appropriate synchronization primitive
+✓ Keep critical sections short and bounded
+✓ Avoid nested locks where possible
+✓ Consider priority inheritance for mutexes
+✓ Use interrupts sparingly (minimal ISR work)
+✓ Implement watchdog timers for recovery
+✓ Test under heavy load conditions
+✓ Use static analysis tools to detect data races
+```
+
+---
+
+## Common Embedded Concurrency Patterns
+
+### Producer-Consumer Pattern
+
+```text
+  ┌────────────────┐      ┌──────────────┐      ┌────────────────┐
+  │   Producer     │      │   Queue      │      │   Consumer     │
+  │  (ISR/Sensor)  │─────▶│  (Buffer)    │─────▶│  (Processing)  │
+  └────────────────┘      └──────────────┘      └────────────────┘
+```
+
+### Observer Pattern
+
+```text
+  ┌──────────────┐
+  │  Subject     │ (Heartbeat, events)
+  │  (Event Source)
+  └──────┬───────┘
+         │
+    ┌────┴────┬────┬────┐
+    ▼         ▼    ▼    ▼
+  Obs1     Obs2  Obs3 Obs4
+  (LED)    (Log) (Actuator) (Display)
+```
+
+### Command Pattern
+
+```text
+  ┌────────────────────────────────────────┐
+  │           Command Queue               │
+  │  ┌────────┐ ┌────────┐ ┌────────┐   │
+  │  │ Cmd 1  │ │ Cmd 2  │ │ Cmd 3  │   │
+  │  └────────┘ └────────┘ └────────┘   │
+  └──────────────┬─────────────────────────┘
+                 │
+                 ▼
+  ┌────────────────────────────────────────┐
+  │           Command Executor             │
+  │  (Processes commands in sequence)     │
+  └────────────────────────────────────────┘
+```
+
+---
+
+## Real-World Example: Multi-Sensor IoT Node
+
+```c
+// Architecture: RTOS with 4 threads
+
+void vBLEThread(void *pvParameters) {
+    for(;;) {
+        // Bluetooth communication
+        // Priority: 1 (Highest - time-critical)
+        process_ble_events();
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
+void vSensorThread(void *pvParameters) {
+    for(;;) {
+        // Read temperature, humidity, pressure
+        // Priority: 2
+        sensor_read();
+        xQueueSend(sensor_queue, &sensor_data, 0);
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}
+
+void vDisplayThread(void *pvParameters) {
+    for(;;) {
+        // Update OLED display
+        // Priority: 3
+        if (xQueueReceive(display_queue, &display_data, portMAX_DELAY)) {
+            update_display(display_data);
+        }
+    }
+}
+
+void vSDCardThread(void *pvParameters) {
+    for(;;) {
+        // Log data to SD card
+        // Priority: 4 (Lowest - can be delayed)
+        if (xQueueReceive(sdcard_queue, &log_data, pdMS_TO_TICKS(5000))) {
+            write_to_sdcard(log_data);
+        }
+    }
+}
+```
+
+---
+
+## Debugging Concurrency Issues
+
+### Tools and Techniques
+
+| Tool/Technique | Purpose |
+|----------------|---------|
+| **printf debug** | Simple logging (careful with time-critical code) |
+| **Logic analyzer** | Visualize timing and context switches |
+| **Tracealyzer** | RTOS-aware tracing and visualization |
+| **Watchdog timer** | Detect and recover from hangs |
+| **Stack overflow detection** | Catch memory corruption |
+| **Mutex lock profiling** | Find lock contention bottlenecks |
+| **Code review checklist** | Systematic check for race conditions |
+
+### Common Debugging Questions
+
+```text
+□ Is the priority inversion issue occurring?
+□ Are interrupts disabled for too long?
+□ Is the stack size sufficient for each thread?
+□ Are there any blocking calls in ISRs?
+□ Are mutexes being released properly?
+□ Is the watchdog being fed correctly?
+□ Are there any memory leaks in event queues?
+```
+
+---
+
+## Summary
+
+Concurrency in embedded systems is essential but challenging. The choice of approach depends on:
+
+1. **System complexity** - Simple systems use interrupts/super-loop, complex systems use RTOS
+2. **Response time requirements** - ISRs for microsecond response, RTOS for millisecond tasks
+3. **Resource constraints** - Super-loop for small MCUs, RTOS/Async for larger systems
+4. **Development team expertise** - RTOS requires more knowledge but improves maintainability
+
+### Quick Reference Table
+
+```text
+┌─────────────┬──────────────┬──────────────┬─────────────┐
+│ Approach    │ Response     │ Memory       │ Use Case    │
+│             │ Time         │ Overhead     │             │
+├─────────────┼──────────────┼──────────────┼─────────────┤
+│ Interrupts  │ Microseconds │ ~8-32 bytes  │ Events      │
+│ Super-Loop  │ Milliseconds │ Very Low     │ Simple      │
+│ RTOS        │ Microseconds │ 1-10 KB      │ Complex     │
+│ Async       │ Microseconds │ 1-5 KB       │ I/O Heavy   │
+└─────────────┴──────────────┴──────────────┴─────────────┘
+```
+
+### Key Takeaways
+
+- **ISRs** handle urgent events with minimal latency
+- **Super-loop** works for simple, predictable systems
+- **RTOS** provides structure and scalability for complex systems
+- **Async** offers efficient I/O handling with less overhead than threads
+- **Synchronization** is mandatory to prevent data corruption
+- **Priority inversion** and **deadlocks** must be carefully avoided
+- **Testing** under worst-case conditions is crucial
+
+---
 
 [Back to Section 4](#4-embedded-systems--linux)
 
 [🔝 Back to Table of Contents](#table-of-contents)
+
+
