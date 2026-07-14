@@ -2153,7 +2153,7 @@ SOM Architecture:
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-# Linux Architecture (Detailed Guide)
+#### 4.5 Linux Architecture
 
 ## What is Linux Architecture?
 
