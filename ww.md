@@ -2153,9 +2153,9 @@ SOM Architecture:
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-#### 4.5 Linux Architecture
+## 4.5 Linux Architecture
 
-## What is Linux Architecture?
+#### What is Linux Architecture?
 
 Linux architecture is a layered design that separates hardware from applications through the Linux kernel. This architecture provides hardware abstraction, process isolation, security, portability, and efficient resource management.
 
@@ -2702,17 +2702,15 @@ Hardware
 * Widely used in embedded systems, desktops, enterprise servers, cloud platforms, Android, and supercomputers.
 
 ---
-
 # Summary
 
 Linux architecture follows a layered approach where **applications run in user space**, **system libraries and the system call interface provide controlled access**, and the **Linux kernel manages all hardware resources**. The kernel is responsible for process scheduling, memory management, device drivers, file systems, networking, security, and interrupt handling. This modular and scalable architecture is one of the key reasons Linux is reliable, efficient, and suitable for systems ranging from small embedded devices to large-scale data centers.
-```
 ---
 [Back to Section 4](#4-embedded-systems--linux)
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-#### 4.6 System Calls
+## 4.6 System Calls
 
 ### 1. What is a System Call?
 
