@@ -2702,10 +2702,6 @@ Hardware
 * Widely used in embedded systems, desktops, enterprise servers, cloud platforms, Android, and supercomputers.
 
 ---
-# Summary
-
-Linux architecture follows a layered approach where **applications run in user space**, **system libraries and the system call interface provide controlled access**, and the **Linux kernel manages all hardware resources**. The kernel is responsible for process scheduling, memory management, device drivers, file systems, networking, security, and interrupt handling. This modular and scalable architecture is one of the key reasons Linux is reliable, efficient, and suitable for systems ranging from small embedded devices to large-scale data centers.
----
 [Back to Section 4](#4-embedded-systems--linux)
 
 [🔝 Back to Table of Contents](#table-of-contents)
