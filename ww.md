@@ -3233,7 +3233,7 @@ Here are the **10 key points** about File Systems for interviews:
 
 ---
 
-## File Systems - 10 Key Points for Interview
+## File Systems
 
 ---
 
