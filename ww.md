@@ -304,16 +304,15 @@ Performance Comparison:
 #### 4.3 Boot Process
 
 # Table of Boot Process
-1. [Linux Boot Process (x86/General Purpose)](#1-linux-boot-process-x86general-purpose)
-2. [i.MX Boot Process (NXP i.MX SoCs)](#2-imx-boot-process-nxp-imx-socs)
-3. [ARM Boot Process (General ARM-based Embedded)](#3-arm-boot-process-general-arm-based-embedded-devices)
-4. [Android Boot Process](#4-android-boot-process-based-on-linux-kernel-mobileembedded-devices)
-5. [Qualcomm Boot Process](#5-qualcomm-boot-process-a-comprehensive-guide)
-6. [Falcon Mode](#6-falcon-mode)
-
+4.3.1. [Linux Boot Process (x86/General Purpose)](#431-linux-boot-process-x86general-purpose)
+4.3.2. [i.MX Boot Process (NXP i.MX SoCs)](#432-imx-boot-process-nxp-imx-socs)
+4.3.3. [ARM Boot Process (General ARM-based Embedded Devices)](#433-arm-boot-process-general-arm-based-embedded-devices)
+4.3.4. [Android Boot Process](#434-android-boot-process-based-on-linux-kernel-mobileembedded-devices)
+4.3.5. [Qualcomm Boot Process](#435-qualcomm-boot-process-a-comprehensive-guide)
+4.3.6. [Falcon Mode](#436-falcon-mode)
 ---
 
-## 1. Linux Boot Process (General-Purpose Systems, e.g., x86)
+#### 4.3.1 Linux Boot Process (x86/General Purpose)
 
 ### Key Stages
 
@@ -475,7 +474,7 @@ start_kernel() {
 ---
 [📑 Table of Boot Process](#table-of-boot-process)
 
-## 2. i.MX Boot Process (NXP i.MX SoCs)
+#### 4.3.2 i.MX Boot Process (NXP i.MX SoCs)
 
 ### Key Stages
 
@@ -679,7 +678,7 @@ start_kernel() {
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-## 3. ARM Boot Process (General ARM-based Embedded Devices)
+#### 4.3.3 ARM Boot Process (General ARM-based Embedded Devices)
 
 ### Key Stages
 
@@ -746,7 +745,7 @@ Boot ROM → SPL → Bootloader → Kernel → RootFS → Init → Applications
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-## 4. Android Boot Process (Based on Linux Kernel, Mobile/Embedded Devices)
+#### 4.3.4 Android Boot Process
 
 ### Key Stages
 
@@ -1019,7 +1018,7 @@ App becomes visible to user
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-# 5. Qualcomm Boot Process: A Comprehensive Guide
+#### 4.3.5 Qualcomm Boot Process: A Comprehensive Guide
 
 ## Overview
 
@@ -1579,7 +1578,7 @@ While the standard Qualcomm Linux flow uses UEFI and `systemd-boot`, there is a 
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-## 6. Falcon Mode
+#### 4.3.6 Falcon Mode
 
 ## Introduction
 
