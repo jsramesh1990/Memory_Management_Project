@@ -474,6 +474,7 @@ start_kernel() {
 
 ---
 [Back to TOC](#table-of-boot-process)
+[📑 Table of Boot Process](#table-of-boot-process)
 
 ## 2. i.MX Boot Process (NXP i.MX SoCs)
 
@@ -675,7 +676,7 @@ start_kernel() {
   - Different i.MX series (6,7,8,9) embed different subsystems (System Controller, Cortex-M domains, edge security), so actual boot steps may include additional sub-steps (e.g., SCFW, Cortex-M core boot).
 
 ---
-[Back to TOC](#table-of-boot-process)
+[📑 Table of Boot Process](#table-of-boot-process)
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
