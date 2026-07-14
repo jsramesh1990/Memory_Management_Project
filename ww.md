@@ -1966,6 +1966,9 @@ This makes Falcon Mode a natural optimization for systems where the boot flow is
 ---
 [Back to TOC](#table-of-boot-process)
 
+[Back to Section 4](#4-embedded-systems--linux)
+```
+
 [🔝 Back to Table of Contents](#table-of-contents)
 
 #### 4.4 SOC vs SOM-1
@@ -2140,7 +2143,8 @@ SOM Architecture:
 | **Memory Integration** | Limited (on-chip) | Large (external) |
 
 ---
-[Back to TOC](#table-of-boot-process)
+[Back to Section 4](#4-embedded-systems--linux)
+```
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
