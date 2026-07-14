@@ -6499,6 +6499,46 @@ static irqreturn_t best_isr(int irq, void *dev_id) {
 
 **Example:**
 ```c
+```c
+#include <linux/interrupt.h>   // Provides interrupt handling functions like request_threaded_irq() and IRQ return codes
+#include <linux/module.h>      // Required for all kernel modules - provides module_init(), module_exit(), and MODULE_* macros
+
+// Threaded handler (can sleep)
+static irqreturn_t threaded_handler(int irq, void *dev_id) {  // Function called in kernel thread context when interrupt occurs; returns IRQ_HANDLED/IRQ_NONE
+    struct my_device *dev = dev_id;     // Cast the void pointer back to our device structure to access device-specific data
+    
+    // Allowed to sleep
+    mutex_lock(&dev->mutex);    // Acquire mutex lock (may sleep if contended) to protect shared data from concurrent access
+    
+    // Allocate memory
+    char *data = kmalloc(1024, GFP_KERNEL);    // Allocate 1KB from kernel heap - GFP_KERNEL flag allows sleeping during allocation
+    if (data) {    // Check if allocation succeeded (NULL if failed)
+        // Complex processing
+        process_data(data, dev);    // Custom function that processes the data - can do any complex operation here
+        kfree(data);    // Free the allocated memory to prevent memory leak
+    }
+    
+    mutex_unlock(&dev->mutex);    // Release the mutex so other threads can access the protected data
+    return IRQ_HANDLED;    // Return value indicating the interrupt was successfully handled by this driver
+}
+
+static int __init init_module(void) {    // Module initialization function - called when module is loaded with insmod/modprobe
+    int ret;    // Variable to store return values for error checking
+    
+    // Register threaded ISR
+    ret = request_threaded_irq(IRQ_NUMBER,    // First arg: Hardware IRQ number to register handler for
+                              NULL,              // Second arg: Primary handler (NULL = use default which wakes threaded handler)
+                              threaded_handler,   // Third arg: Threaded handler function (runs in kernel thread context)
+                              IRQF_SHARED,    // Fourth arg: Interrupt flags - IRQF_SHARED allows multiple devices to share same IRQ line
+                              "my_device",    // Fifth arg: Device name shown in /proc/interrupts
+                              dev_data);    // Sixth arg: Device ID pointer passed to handler as dev_id parameter
+    
+    return ret;    // Return 0 on success, negative error code on failure
+}
+```
+
+
+
 #include <linux/interrupt.h>
 #include <linux/module.h>
 
