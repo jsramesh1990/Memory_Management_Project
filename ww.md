@@ -4922,6 +4922,73 @@ if (put_user(value, user_ptr)) {
 
 ### Q8: What are the important functions in a character driver?
 
+## Important Functions in a Character Driver (6 lines each)
+
+### 1. `open()`
+
+* **Definition:** Called when a user opens the device file.
+* **Syntax:** `int (*open)(struct inode *, struct file *);`
+* **Use:** Initializes the device and allocates resources.
+* **Called by:** `open("/dev/mydevice", O_RDWR);`
+* **Where used:** Character drivers (UART, GPIO, sensors).
+* **Returns:** `0` on success, negative error code on failure.
+
+---
+
+### 2. `release()` (close)
+
+* **Definition:** Called when the device file is closed.
+* **Syntax:** `int (*release)(struct inode *, struct file *);`
+* **Use:** Frees allocated resources and closes the device.
+* **Called by:** `close(fd);`
+* **Where used:** Cleanup in character drivers.
+* **Returns:** `0` on success.
+
+---
+
+### 3. `read()`
+
+* **Definition:** Reads data from the device to user space.
+* **Syntax:** `ssize_t (*read)(struct file *, char __user *, size_t, loff_t *);`
+* **Use:** Sends device data to an application.
+* **Called by:** `read(fd, buf, size);`
+* **Where used:** Sensors, UART, keyboards, ADC.
+* **Returns:** Number of bytes read.
+
+---
+
+### 4. `write()`
+
+* **Definition:** Writes data from user space to the device.
+* **Syntax:** `ssize_t (*write)(struct file *, const char __user *, size_t, loff_t *);`
+* **Use:** Receives data from an application.
+* **Called by:** `write(fd, buf, size);`
+* **Where used:** LCD, LEDs, UART, DAC.
+* **Returns:** Number of bytes written.
+
+---
+
+### 5. `unlocked_ioctl()`
+
+* **Definition:** Performs device-specific control operations.
+* **Syntax:** `long (*unlocked_ioctl)(struct file *, unsigned int, unsigned long);`
+* **Use:** Executes custom commands not supported by read/write.
+* **Called by:** `ioctl(fd, cmd, arg);`
+* **Where used:** Configuration of drivers and hardware.
+* **Returns:** `0` or appropriate result/error.
+
+---
+
+### 6. `llseek()`
+
+* **Definition:** Changes the current file position.
+* **Syntax:** `loff_t (*llseek)(struct file *, loff_t, int);`
+* **Use:** Moves the file pointer to a new offset.
+* **Called by:** `lseek(fd, offset, SEEK_SET);`
+* **Where used:** Character devices supporting random access.
+* **Returns:** New file position or error.
+
+
 **Answer:**
 
 ```c
