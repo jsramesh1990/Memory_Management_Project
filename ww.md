@@ -2150,7 +2150,565 @@ SOM Architecture:
 
 ---
 [Back to Section 4](#4-embedded-systems--linux)
+
+[🔝 Back to Table of Contents](#table-of-contents)
+
+# Linux Architecture (Detailed Guide)
+
+## What is Linux Architecture?
+
+Linux architecture is a layered design that separates hardware from applications through the Linux kernel. This architecture provides hardware abstraction, process isolation, security, portability, and efficient resource management.
+
+Linux primarily operates in two execution modes:
+
+* **Kernel Space (Kernel Mode):** Full access to hardware and all system resources.
+* **User Space (User Mode):** Applications execute with limited privileges and must request kernel services using **system calls**.
+
+The layered architecture makes Linux stable, modular, secure, and highly scalable, allowing it to run on embedded systems, desktops, servers, cloud infrastructure, and supercomputers.
+
+---
+
+# Linux Architecture Diagram
+
+```text
++-------------------------------------------------------+
+|                 User Applications                      |
+| (Firefox, Chrome, VLC, SSH, MySQL, Python, etc.)      |
++-------------------------------------------------------+
+|                Shell & GUI                             |
+| Bash | Zsh | Fish | GNOME | KDE | Qt | GTK            |
++-------------------------------------------------------+
+|           System Libraries & Utilities                |
+| glibc | libc | POSIX APIs | Coreutils | Systemd       |
++-------------------------------------------------------+
+|            System Call Interface (SCI)                |
++-------------------------------------------------------+
+|                Linux Kernel                           |
+|-------------------------------------------------------|
+| Process Management                                    |
+| Memory Management                                     |
+| Virtual File System (VFS)                             |
+| Device Drivers                                        |
+| Networking Stack                                      |
+| Security                                               |
+| IPC                                                    |
+| Scheduler                                              |
++-------------------------------------------------------+
+|                  Hardware                             |
+| CPU | RAM | Storage | UART | GPIO | USB | Ethernet    |
++-------------------------------------------------------+
 ```
+
+---
+
+# 1. Hardware Layer
+
+The hardware layer consists of the physical components of a computer or embedded system.
+
+It includes:
+
+* CPU
+* RAM
+* ROM/Flash
+* Hard Disk / SSD / eMMC
+* UART
+* SPI
+* I2C
+* GPIO
+* Ethernet Controller
+* USB Controller
+* Timers
+* Interrupt Controller
+* GPU
+* DMA Controller
+
+The operating system never accesses hardware directly from user applications. Instead, the Linux kernel communicates with hardware through **device drivers**.
+
+Example:
+
+```
+Application
+      ↓
+Kernel
+      ↓
+UART Driver
+      ↓
+UART Hardware
+```
+
+---
+
+# 2. Kernel Space
+
+The Linux kernel is the core of the operating system.
+
+It runs in **privileged mode (Ring 0)** with unrestricted access to:
+
+* CPU
+* Memory
+* Hardware Registers
+* Interrupts
+* I/O Devices
+
+Its primary responsibilities are:
+
+* Process management
+* Memory management
+* Device management
+* File system management
+* Networking
+* Security
+* Interrupt handling
+
+---
+
+## Kernel Components
+
+### A. Process Management
+
+A process is a program in execution.
+
+The kernel is responsible for:
+
+* Creating processes (`fork()`)
+* Executing programs (`exec()`)
+* Scheduling CPU time
+* Terminating processes (`exit()`)
+* Synchronization
+* Context switching
+
+Example:
+
+```
+Parent Process
+      |
+   fork()
+      |
++-----------+
+|           |
+Parent    Child
+```
+
+---
+
+### B. Memory Management
+
+The memory manager controls RAM allocation.
+
+Responsibilities:
+
+* Virtual Memory
+* Paging
+* Swapping
+* Memory Mapping
+* Shared Memory
+* Cache Management
+* Page Tables
+
+Linux gives each process its own virtual address space.
+
+```
+Virtual Address
+        ↓
+Memory Management Unit (MMU)
+        ↓
+Physical RAM
+```
+
+Advantages:
+
+* Process isolation
+* Memory protection
+* Efficient RAM usage
+
+---
+
+### C. Process Scheduler
+
+Modern Linux uses the **Completely Fair Scheduler (CFS)**.
+
+Responsibilities:
+
+* CPU scheduling
+* Priority handling
+* Time slicing
+* Context switching
+* Load balancing (SMP systems)
+
+Scheduling types:
+
+* Real-Time Scheduling
+* Fair Scheduling
+* Deadline Scheduling
+
+---
+
+### D. Device Drivers
+
+Device drivers allow Linux to communicate with hardware.
+
+Examples:
+
+* UART Driver
+* USB Driver
+* SPI Driver
+* Ethernet Driver
+* I2C Driver
+* Camera Driver
+* GPIO Driver
+* Display Driver
+
+Applications never access hardware directly.
+
+```
+Application
+     ↓
+System Call
+     ↓
+Kernel
+     ↓
+Device Driver
+     ↓
+Hardware
+```
+
+---
+
+### E. Virtual File System (VFS)
+
+Linux supports many file systems.
+
+Examples:
+
+* ext4
+* FAT32
+* NTFS
+* XFS
+* Btrfs
+* NFS
+
+Instead of applications knowing every file system implementation, Linux provides the **Virtual File System (VFS)**.
+
+```
+Application
+      ↓
+VFS
+      ↓
+ext4
+NTFS
+FAT32
+NFS
+```
+
+This provides a common interface for all file systems.
+
+---
+
+### F. Networking Subsystem
+
+Linux contains a complete TCP/IP networking stack.
+
+Responsibilities:
+
+* Ethernet
+* IPv4
+* IPv6
+* TCP
+* UDP
+* Routing
+* Firewall (Netfilter)
+* Socket Interface
+
+Applications communicate through sockets.
+
+Example:
+
+```
+Browser
+    ↓
+Socket API
+    ↓
+TCP/IP Stack
+    ↓
+Ethernet Driver
+    ↓
+NIC
+```
+
+---
+
+### G. IPC (Inter Process Communication)
+
+Processes communicate using IPC mechanisms.
+
+Linux supports:
+
+* Pipes
+* Named Pipes (FIFO)
+* Message Queues
+* Shared Memory
+* Semaphores
+* Signals
+* UNIX Domain Sockets
+
+---
+
+### H. Security
+
+The kernel provides security using:
+
+* User IDs (UID)
+* Group IDs (GID)
+* File Permissions
+* Access Control Lists (ACL)
+* Capabilities
+* SELinux
+* AppArmor
+* Secure Boot support
+
+---
+
+### I. Interrupt Handling
+
+Hardware generates interrupts when attention is needed.
+
+Examples:
+
+* Keyboard pressed
+* UART received data
+* Network packet arrived
+* Timer expired
+
+Flow:
+
+```
+Hardware
+      ↓
+Interrupt
+      ↓
+Interrupt Controller
+      ↓
+Kernel ISR
+      ↓
+Device Driver
+```
+
+---
+
+# 3. System Call Interface (SCI)
+
+Applications cannot access the kernel directly.
+
+Instead, they use **System Calls**.
+
+Examples:
+
+* `open()`
+* `read()`
+* `write()`
+* `close()`
+* `fork()`
+* `execve()`
+* `mmap()`
+* `socket()`
+
+Example:
+
+```
+printf()
+    ↓
+glibc
+    ↓
+write()
+    ↓
+Kernel
+    ↓
+Terminal Driver
+```
+
+The System Call Interface provides a controlled gateway between user space and kernel space.
+
+---
+
+# 4. System Libraries
+
+System libraries simplify application development.
+
+Most important library:
+
+**glibc (GNU C Library)**
+
+Functions include:
+
+* `printf()`
+* `malloc()`
+* `fopen()`
+* `pthread_create()`
+* `socket()`
+
+Instead of writing system calls manually, developers use library functions.
+
+Example:
+
+```
+Application
+   ↓
+printf()
+   ↓
+glibc
+   ↓
+write()
+   ↓
+Kernel
+```
+
+---
+
+# 5. System Utilities
+
+Utilities help users manage Linux.
+
+Examples:
+
+* `ls`
+* `cp`
+* `mv`
+* `ps`
+* `top`
+* `grep`
+* `systemctl`
+* `mount`
+* `fdisk`
+
+These tools are user-space programs that interact with the kernel through system calls.
+
+---
+
+# 6. Shell
+
+The shell is a command interpreter.
+
+Popular shells:
+
+* Bash
+* Zsh
+* Fish
+* Dash
+
+Example:
+
+```
+User
+  ↓
+ls
+  ↓
+Shell
+  ↓
+exec()
+  ↓
+Kernel
+  ↓
+Filesystem
+```
+
+The shell reads commands, parses them, and invokes the appropriate programs.
+
+---
+
+# 7. User Space
+
+User space contains all applications and services.
+
+Examples:
+
+* Chrome
+* Firefox
+* VLC
+* GCC
+* Python
+* MySQL
+* Apache
+* SSH
+* Docker
+
+Characteristics:
+
+* Cannot access hardware directly
+* Runs in protected mode
+* Uses system calls for kernel services
+* Crashes do not usually affect the kernel
+
+---
+
+# User Space vs Kernel Space
+
+| Feature         | User Space   | Kernel Space            |
+| --------------- | ------------ | ----------------------- |
+| Privilege Level | Unprivileged | Privileged              |
+| Hardware Access | No           | Yes                     |
+| Memory Access   | Restricted   | Full                    |
+| Crash Impact    | Process only | Entire system may crash |
+| Execution Mode  | User Mode    | Kernel Mode             |
+
+---
+
+# Complete Linux Architecture Flow
+
+```
+User
+   │
+   ▼
+Applications
+   │
+   ▼
+Shell / GUI
+   │
+   ▼
+System Libraries (glibc)
+   │
+   ▼
+System Call Interface
+   │
+   ▼
+Linux Kernel
+   ├── Process Management
+   ├── Scheduler
+   ├── Memory Management
+   ├── VFS
+   ├── Device Drivers
+   ├── Networking
+   ├── IPC
+   ├── Security
+   └── Interrupt Handling
+   │
+   ▼
+Hardware
+```
+
+---
+
+# Key Features of Linux Architecture
+
+* Layered architecture with clear separation between user space and kernel space.
+* Monolithic kernel with support for dynamically loadable kernel modules.
+* Hardware abstraction through device drivers.
+* Portable across architectures such as x86, ARM, RISC-V, and PowerPC.
+* Preemptive multitasking with advanced scheduling.
+* Virtual memory and process isolation for security and stability.
+* Rich file system support through the Virtual File System (VFS).
+* Complete networking stack with TCP/IP, IPv6, routing, and firewall capabilities.
+* Strong security model with permissions, capabilities, SELinux, and AppArmor.
+* Extensive IPC mechanisms for efficient communication between processes.
+* Widely used in embedded systems, desktops, enterprise servers, cloud platforms, Android, and supercomputers.
+
+---
+
+# Summary
+
+Linux architecture follows a layered approach where **applications run in user space**, **system libraries and the system call interface provide controlled access**, and the **Linux kernel manages all hardware resources**. The kernel is responsible for process scheduling, memory management, device drivers, file systems, networking, security, and interrupt handling. This modular and scalable architecture is one of the key reasons Linux is reliable, efficient, and suitable for systems ranging from small embedded devices to large-scale data centers.
+```
+---
+[Back to Section 4](#4-embedded-systems--linux)
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
