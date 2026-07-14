@@ -473,7 +473,6 @@ start_kernel() {
 - For secure boot or measured boot on PC/servers, UEFI Secure Boot adds steps of signature verification (not covered in embedded i.MX case).
 
 ---
-[Back to TOC](#table-of-boot-process)
 [📑 Table of Boot Process](#table-of-boot-process)
 
 ## 2. i.MX Boot Process (NXP i.MX SoCs)
@@ -743,7 +742,7 @@ Boot ROM → SPL → Bootloader → Kernel → RootFS → Init → Applications
 - Device Tree is essential for hardware abstraction in many ARM SoCs.
 
 ---
-[Back to TOC](#table-of-boot-process)
+[📑 Table of Boot Process](#table-of-boot-process)
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
@@ -960,7 +959,7 @@ App becomes visible to user
 - The root filesystem layout is different: /system, /vendor, /boot, /recovery, and user data partition—so the mount and init process is tailored for Android.
 
 ---
-[Back to TOC](#table-of-boot-process)
+[📑 Table of Boot Process](#table-of-boot-process)
 
 ## 5. Summary Table (All Boot Processes)
 
@@ -988,7 +987,7 @@ App becomes visible to user
 | **7️⃣** | **Debug & Validation** | • Bring-up hardware (UART, DDR, I2C, SPI, GPIO tests)<br>• Use serial console logs<br>• Use oscilloscope, logic analyzer for signal-level debug<br>• Kernel crash / panic analysis<br>• Root cause analysis for boot hangs | ➤ JTAG, OpenOCD<br>➤ minicom / picocom<br>➤ GDB cross-debugging |
 
 ---
-[Back to TOC](#table-of-boot-process)
+[📑 Table of Boot Process](#table-of-boot-process)
 
 ##  Boot Components: Locations, Functions & Starting Points
 
@@ -1016,7 +1015,7 @@ App becomes visible to user
 | **Key Files** | • **board.c:** Board initialization<br>• **ddr.c:** DDR timing configuration<br>• **env:** U-Boot environment variables<br>• **Kconfig:** Build configuration |
 
 ---
-[Back to TOC](#table-of-boot-process)
+[📑 Table of Boot Process](#table-of-boot-process)
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
@@ -1576,7 +1575,7 @@ While the standard Qualcomm Linux flow uses UEFI and `systemd-boot`, there is a 
 ```
 
 ---
-[Back to TOC](#table-of-boot-process)
+[📑 Table of Boot Process](#table-of-boot-process)
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
