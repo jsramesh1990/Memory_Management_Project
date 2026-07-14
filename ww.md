@@ -1967,7 +1967,7 @@ This makes Falcon Mode a natural optimization for systems where the boot flow is
 [Back to TOC](#table-of-boot-process)
 
 [Back to Section 4](#4-embedded-systems--linux)
-```
+
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
