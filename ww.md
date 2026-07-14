@@ -2976,11 +2976,11 @@ exit_group(0) = ?                                 ← System call
 ---
 
 [Back to Section 4](#4-embedded-systems--linux)
-```
+
 
 [🔝 Back to Table of Contents](#table-of-contents)
 
-#### 4.7 Process-Thread Management
+## 4.7 Process-Thread Management
 
 ### 1. What is a Process?
 
