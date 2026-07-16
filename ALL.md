@@ -1,7 +1,7 @@
 
 # Memory Management
 
-## Table of Contents
+## Table of MM
 
 | [1. MM: Memory Layout](#1-mm-memory-layout)
 | [2. MM: Stack vs Heap](#2-mm-stack-vs-heap)
@@ -26,62 +26,96 @@
 
 ---
 
+⬆️ **[Back to Table of MM](#table-of-mm)**
+
 ## 2. MM: Stack vs Heap
 
 ---
+
+⬆️ **[Back to Table of MM](#table-of-mm)**
 
 ## 3. MM: Storage Classes
 
 ---
 
+⬆️ **[Back to Table of MM](#table-of-mm)**
+
 ## 4. MM: Linker Script
 
 ---
+
+⬆️ **[Back to Table of MM](#table-of-mm)**
 
 ## 5. MM: Memory Mapped I/O
 
 ---
 
+
+⬆️ **[Back to Table of MM](#table-of-mm)**
+
 ## 6. MM: `volatile`
 
 ---
+
+⬆️ **[Back to Table of MM](#table-of-mm)**
 
 ## 7. MM: `malloc()`, `calloc()`, `realloc()`, `free()`
 
 ---
 
+⬆️ **[Back to Table of MM](#table-of-mm)**
+
 ## 8. MM: Memory Issues
 
 ---
+
+⬆️ **[Back to Table of MM](#table-of-mm)**
 
 ## 9. MM: Buffers (Circular Buffer)
 
 ---
 
+⬆️ **[Back to Table of MM](#table-of-mm)**
+
 ## 10. MM: Memory Pool
 
 ---
+
+⬆️ **[Back to Table of MM](#table-of-mm)**
 
 ## 11. MM: Cache Architecture
 
 ---
 
+⬆️ **[Back to Table of MM](#table-of-mm)**
+
 ## 12. MM: Memory Barriers
 
 ---
+
+⬆️ **[Back to Table of MM](#table-of-mm)**
 
 ## 13. MM: Alignment & Padding
 
 ---
 
+
+⬆️ **[Back to Table of MM](#table-of-mm)**
+
 ## 14. MM: Endianness
 
 ---
+
+⬆️ **[Back to Table of MM](#table-of-mm)**
 
 ## 15. MM: DMA Memory
 
 ---
 
+⬆️ **[Back to Table of MM](#table-of-mm)**
+
 ## 16. MM: MPU/MMU (Basics)
 
 ---
+
+⬆️ **[Back to Table of MM](#table-of-mm)**
