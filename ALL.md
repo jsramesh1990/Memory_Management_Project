@@ -53,11 +53,10 @@ Low Memory Address
 ```
 
 ### 1. **Text Segment (Code Segment)**
-- Contains executable machine code
-- Read-only to prevent accidental modification
-- Shared among multiple processes
-- Stores constants and string literals
-- Fixed size during program execution
+- Contains executable machine instructions.
+- Usually read-only and executable.
+- String literals are typically stored in the .rodata (read-only data) section, which is often mapped close to the text segment by the linker.
+- Shared among processes running the same executable.
 
 ### 2. **Data Segment**
 - **Initialized Data**: Global/static variables with initial values
@@ -66,20 +65,21 @@ Low Memory Address
 - **Uninitialized Data (BSS)**: Global/static variables without initial values
   - Example: `int y;`
   - Automatically initialized to zero
-  - More efficient as it only stores size information
+  - The BSS section stores uninitialized global and static variables. These variables are zero-initialized by the loader at program startup, and only the size of the section is stored in the executable, reducing the executable file size.
 
 ### 3. **Heap**
 - Dynamic memory allocation
 - Grows upward (towards higher addresses)
 - Managed by `malloc()`, `calloc()`, `free()` in C
 - Used for runtime memory allocation
-- Can cause fragmentation
+- Allocated dynamically using malloc(), calloc(), and realloc().
+- Memory remains allocated until explicitly released using free().
 
 ### 4. **Stack**
 - Stores local variables, function parameters, return addresses
 - LIFO (Last In First Out) structure
 - Grows downward (towards lower addresses)
-- Automatically managed
+- Memory is automatically allocated when a function is entered and automatically released when the function returns.
 - Fast allocation/deallocation
 
 ---
@@ -123,7 +123,7 @@ int main() {
     *heap_ptr = 40;
     
     // String literal - stored in text segment
-    char *str = "Hello World";
+    char *str = "Hello World"; // // String literal - stored in text segment  , // Pointer on stack, string literal in .rodata (read-only data)
     
     free(heap_ptr);
     return 0;
@@ -142,6 +142,13 @@ pmap [PID]
 # Use valgrind to analyze memory
 valgrind --tool=massif ./program
 ```
+* **`size program`** – Displays the total sizes of the **Text**, **Data**, and **BSS** sections of the executable.
+* **`size -A program`** – Displays the size of **every section** (e.g., `.text`, `.data`, `.bss`, `.rodata`) in the executable.
+* **`readelf -S program`** – Lists all **ELF section headers**, including their names, addresses, offsets, and sizes.
+* **`objdump -h program`** – Displays the **section table** of the executable with each section's size and memory address.
+* **`nm program`** – Lists the program's **symbol table**, showing functions and global/static variables along with their memory sections (e.g., `T`, `D`, `B`, `R`).
+
+
 
 ### Debugging Memory Issues:
 
