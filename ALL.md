@@ -803,30 +803,12 @@ delete ptr;
 std::unique_ptr<int> ptr = std::make_unique<int>(5);
 ```
 
-### Java
-```java
-// Stack (primitives and references)
-int x = 5;          // x on stack
-String s = "hello"; // s reference on stack, object on heap
-
-// Heap (objects always on heap)
-String str = new String("hello");
-```
-
 ### Python
 ```python
 # Everything is on heap!
 x = 5        # Integer object on heap
 list = [1,2,3]  # List object on heap
 # Python manages memory automatically
-```
-
-### JavaScript
-```javascript
-// Everything on heap (in modern JS engines)
-let x = 5;     // Primitive might be on stack
-let arr = [1,2,3]; // Object on heap
-// V8 engine optimizes with hidden classes
 ```
 
 ---
@@ -889,6 +871,9 @@ struct Foo {
 
 // Heap alignment similar, but allocator handles it
 ```
+Structure alignment inserts padding bytes so that each member is stored at its required memory boundary, improving CPU access efficiency (e.g., int i is aligned to a 4-byte boundary, making struct Foo 8 bytes instead of 5).
+Heap allocations are also aligned by the memory allocator, ensuring that dynamically allocated objects satisfy the alignment requirements of their data types.
+
 
 ### Memory Pools
 ```c
@@ -906,6 +891,9 @@ void* poolAllocate(MemoryPool* pool, size_t size) {
     return ptr;
 }
 ```
+Memory Pool
+A memory pool is a pre-allocated block of heap memory from which smaller memory blocks are allocated, reducing the overhead of repeated malloc() and free() calls.
+In poolAllocate(), the function checks whether enough free space is available, returns the next available memory address from the pool, and updates the used offset to track allocated memory.
 
 ### Custom Allocators
 ```c
